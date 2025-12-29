@@ -1,0 +1,106 @@
+---
+description: API design standards and versioning
+globs: ["**/*.ts", "**/*.java", "**/*.py", "**/api/**"]
+alwaysApply: false
+---
+
+API design standards for Leanda.io:
+
+## API Versioning
+- Use semantic versioning for APIs: `/api/v1/`, `/api/v2/`
+- Support multiple API versions simultaneously during migration
+- Deprecate old versions with at least 6 months notice
+- Document version lifecycle in API documentation
+- Include API version in response headers (`X-API-Version: v1`)
+
+## RESTful Design
+- Use plural nouns for resources: `/api/v1/chemicals`, `/api/v1/reactions`
+- Use HTTP verbs for actions: GET (read), POST (create), PUT (update), PATCH (partial update), DELETE (remove)
+- Use nested resources for relationships: `/api/v1/chemicals/{id}/properties`
+- Return appropriate HTTP status codes:
+  - 200 OK (successful GET, PUT, PATCH)
+  - 201 Created (successful POST)
+  - 204 No Content (successful DELETE)
+  - 400 Bad Request (client error)
+  - 401 Unauthorized (authentication required)
+  - 403 Forbidden (insufficient permissions)
+  - 404 Not Found (resource doesn't exist)
+  - 409 Conflict (resource conflict)
+  - 500 Internal Server Error (server error)
+
+## Error Response Format
+- Use consistent error response format across all APIs:
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid SMILES string format",
+    "details": {...},
+    "correlation_id": "abc123",
+    "timestamp": "2025-01-15T10:30:00Z"
+  }
+}
+```
+- Include correlation ID in all error responses for debugging
+- Never expose stack traces or internal implementation details
+
+## Pagination
+- Use cursor-based pagination for large datasets (preferred over offset-based)
+- Include pagination metadata in response:
+```json
+{
+  "data": [...],
+  "pagination": {
+    "next_cursor": "eyJpZCI6IjEyMzQ1In0=",
+    "has_more": true,
+    "page_size": 50
+  }
+}
+```
+- Support configurable page size (default: 50, max: 1000)
+- Document pagination parameters in API documentation
+
+## Rate Limiting
+- Implement rate limiting on all public endpoints
+- Return rate limit headers:
+  - `X-RateLimit-Limit`: Maximum requests per window
+  - `X-RateLimit-Remaining`: Remaining requests in current window
+  - `X-RateLimit-Reset`: Time when rate limit resets
+- Return 429 Too Many Requests when limit exceeded
+- Use different limits for authenticated vs anonymous users
+
+## HATEOAS (Hypermedia as the Engine of Application State)
+- Include links to related resources in API responses:
+```json
+{
+  "id": "123",
+  "name": "Aspirin",
+  "_links": {
+    "self": "/api/v1/chemicals/123",
+    "properties": "/api/v1/chemicals/123/properties",
+    "reactions": "/api/v1/chemicals/123/reactions"
+  }
+}
+```
+- Enable API discoverability through link relations
+
+## Request/Response Format
+- Use JSON for request and response bodies
+- Use consistent naming: camelCase for JSON properties
+- Include Content-Type header: `application/json`
+- Support compression (gzip) for large responses
+- Validate request content type and reject unsupported formats
+
+## GraphQL (Optional)
+- Consider GraphQL for complex scientific queries with multiple related entities
+- Use GraphQL for queries that require flexible field selection
+- Implement proper authentication and authorization for GraphQL endpoints
+- Use DataLoader pattern to prevent N+1 query problems
+- Document GraphQL schema with descriptions and examples
+
+## API Documentation
+- Generate OpenAPI 3.1 specification for all REST APIs
+- Include request/response examples in OpenAPI spec
+- Document all query parameters, path parameters, and request bodies
+- Include authentication requirements and authorization scopes
+- Provide interactive API documentation (Swagger UI, ReDoc)

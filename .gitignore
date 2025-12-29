@@ -1,0 +1,53 @@
+# Common build artifacts
+target/
+dist/
+build/
+*.class
+*.jar
+*.war
+*.ear
+*.swp
+*.swo
+*~
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# CDK
+cdk.out/
+
+# Archive folder (as per workspace rules)
+.archive/
+
+# Autonomous test runs (generated artifacts)
+docs/testing/autonomous-runs/

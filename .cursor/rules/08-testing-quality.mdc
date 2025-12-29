@@ -1,0 +1,65 @@
+---
+description: Testing and quality gates standards
+globs: ["**/*"]
+alwaysApply: true
+---
+
+Testing and quality standards for Leanda.io:
+
+## Test Coverage Requirements
+- Require unit tests for ALL new business logic (minimum 80% code coverage)
+- Use Test-Driven Development (TDD) for domain logic and core algorithms
+- Use Behavior-Driven Development (BDD) for API contracts and user stories
+- Integration tests required for all database operations and external service calls
+- End-to-end (E2E) tests required for critical user journeys
+- Mutation testing recommended for critical scientific calculations
+
+## Unit Testing
+- Test one thing per test (single responsibility)
+- Use descriptive test names: `test_should_calculate_molecular_weight_given_valid_smiles`
+- Follow AAA pattern: Arrange, Act, Assert
+- Test both happy paths and error paths
+- Test edge cases (null, empty, boundary values)
+- Mock external dependencies (AWS services, databases, HTTP clients)
+
+## Mocking and Test Doubles
+- Use `moto` for AWS service mocking (S3, Lambda, DynamoDB, etc.)
+- Use `WireMock` or `MockServer` for HTTP service mocking
+- Use in-memory databases for integration tests (H2, SQLite, MongoDB Memory Server)
+- Mock time-dependent operations (use `freezegun` in Python, `java.time.Clock` in Java)
+- Never mock what you don't own (prefer real implementations for internal code)
+
+## Integration Testing
+- Test database operations with real database instances (Docker containers)
+- Test API endpoints with real HTTP requests (use TestContainers for services)
+- Test event-driven flows with in-memory message brokers
+- Use test fixtures and factories for consistent test data
+- Clean up test data after each test (use transactions or cleanup methods)
+
+## End-to-End Testing
+- Use Playwright for browser-based E2E tests (replaces deprecated Protractor)
+- Test critical user journeys: data upload, curation, search, export
+- Use page object model (POM) for maintainable E2E tests
+- Run E2E tests in CI/CD pipeline (separate from unit/integration tests)
+- Use test environments that mirror production (staging environment)
+
+## Test Organization
+- Mirror source structure in test directories (`src/` → `tests/`, `src/` → `test/`)
+- Group related tests (use test classes, describe blocks, pytest fixtures)
+- Use test data builders for complex object creation
+- Keep tests fast (unit tests < 1s, integration < 10s, E2E < 60s)
+- Use test tags/markers to categorize tests (unit, integration, e2e, slow)
+
+## Quality Gates
+- All tests must pass before merging PRs
+- Code coverage must not decrease (enforce with coverage gates)
+- No skipped or disabled tests in production code
+- All flaky tests must be fixed or removed
+- Performance tests for critical paths (load testing with k6, JMeter)
+
+## Scientific Data Testing
+- Validate scientific data formats (SDF, MOL, CIF) with format-specific parsers
+- Test data transformation accuracy (compare before/after for scientific correctness)
+- Use reference datasets for regression testing
+- Test numerical precision for calculations (use appropriate tolerance)
+- Validate ontology mappings and semantic annotations

@@ -1,0 +1,100 @@
+---
+description: AWS monitoring, alerting, and observability patterns
+globs: ["**/aws/**", "**/*.cdk.ts", "**/*.py", "**/*.java"]
+alwaysApply: false
+---
+
+AWS monitoring and observability standards for Leanda.io:
+
+## CloudWatch Dashboards
+- Create CloudWatch Dashboards for each bounded context (ingestion, curation, ML, API)
+- Include key metrics: request count, error rate, latency (p50, p95, p99), throughput
+- Add business metrics: data uploads, curation jobs completed, search queries
+- Use CloudWatch Widgets for visualization (line charts, number widgets, logs insights)
+- Set dashboard refresh intervals (1min for real-time, 5min for historical)
+- Share dashboards with team members (read-only access)
+
+## CloudWatch Logs
+- Use CloudWatch Logs Insights for log analysis queries
+- Structure log queries for common patterns:
+  - Error analysis: `fields @timestamp, @message | filter @message like /ERROR/`
+  - Performance analysis: `fields @timestamp, duration | stats avg(duration) by bin(5m)`
+- Set up log retention policies (30 days for debug, 90 days for info, 1 year for errors)
+- Use log groups per service/environment: `/aws/lambda/leanda-ingestion-prod`
+- Enable log encryption with KMS
+- Use CloudWatch Logs Insights saved queries for common analysis
+
+## CloudWatch Alarms
+- Set up Composite Alarms for multi-condition alerting (combine multiple metrics)
+- Use Metric Math for derived metrics:
+  - Error rate: `errors / total_requests * 100`
+  - Availability: `(total_requests - errors) / total_requests * 100`
+- Configure alarm actions: SNS notifications, Auto Scaling actions, Lambda invocations
+- Set appropriate alarm thresholds (avoid alert fatigue):
+  - Error rate > 1% for 5 minutes
+  - Latency p95 > 1s for 5 minutes
+  - CPU utilization > 80% for 10 minutes
+- Use alarm descriptions with runbook links and troubleshooting steps
+
+## CloudWatch Application Signals (APM)
+- Enable CloudWatch Application Signals for application performance monitoring
+- Instrument services with OpenTelemetry and send traces to CloudWatch
+- Use service maps to visualize service dependencies and bottlenecks
+- Set up service-level objectives (SLOs) and service-level indicators (SLIs)
+- Monitor error budgets and alert when budget is consumed
+
+## X-Ray Distributed Tracing
+- Enable X-Ray tracing for all Lambda functions (set `AWS_XRAY_TRACING_NAME`)
+- Use X-Ray SDK in Quarkus services (add `aws-xray-recorder-sdk-quarkus` dependency)
+- Add custom segments for:
+  - Database queries (track query duration and parameters)
+  - External API calls (track HTTP requests and responses)
+  - Business operations (track domain logic execution)
+- Configure sampling rules to balance cost and visibility:
+  - 100% sampling for errors
+  - 10% sampling for successful requests
+  - 1% sampling for high-volume endpoints
+- Enable X-Ray groups for service-specific views (filter by service name, environment)
+
+## Container Insights
+- Enable Container Insights for ECS/Fargate workloads
+- Monitor container metrics: CPU, memory, network, storage
+- Track task-level metrics and service-level aggregations
+- Use Container Insights for performance troubleshooting
+
+## Alerting Strategy
+- Define severity levels:
+  - P1 (Critical): Immediate response required (service down, data loss)
+  - P2 (High): Response within 1 hour (degraded performance, errors)
+  - P3 (Medium): Response within 24 hours (warnings, optimization opportunities)
+- Route P1 alerts to PagerDuty/OpsGenie for on-call escalation
+- Use SNS topics with appropriate subscriptions per severity:
+  - P1: PagerDuty + Slack #critical-alerts
+  - P2: Slack #alerts + email
+  - P3: Slack #notifications
+- Include runbook links in alarm descriptions
+- Implement alert suppression during maintenance windows (use SNS filter policies)
+
+## Cost Monitoring
+- Set up AWS Budgets with SNS notifications for cost thresholds (50%, 80%, 100%)
+- Monitor Lambda concurrent executions to prevent throttling (cost spikes)
+- Track Glue DPU-hours and optimize job configurations
+- Alert on unexpected S3 request patterns (high request counts, large data transfer)
+- Monitor SageMaker endpoint invocation costs
+- Use AWS Cost Anomaly Detection for automated cost monitoring
+
+## Custom Metrics
+- Publish custom CloudWatch metrics for business events:
+  - Data uploads: `Count` metric with dimensions (format, size, user)
+  - Curation jobs: `Count` and `Duration` metrics
+  - Search queries: `Count` and `Latency` metrics
+- Use CloudWatch Embedded Metric Format (EMF) for structured logging
+- Set up metric filters to extract metrics from log events
+- Use metric math to create derived metrics (ratios, percentages, aggregations)
+
+## Log Aggregation
+- Centralize logs from all services in CloudWatch Logs
+- Use log groups with consistent naming: `/aws/lambda/{service}-{environment}`
+- Enable log streaming to other services (OpenSearch, S3) if needed
+- Set up log retention policies based on compliance requirements
+- Use CloudWatch Logs Insights for cross-service log analysis

@@ -1,0 +1,242 @@
+asyncapi: '3.0.0'
+info:
+  title: Leanda NG Domain Events
+  version: 1.0.0
+  description: |
+    Domain events for Leanda NG platform.
+    Events are published to Kafka topics and consumed by various services.
+
+servers:
+  kafka:
+    host: redpanda:9092
+    protocol: kafka
+    description: Kafka broker (Redpanda) for local development
+
+channels:
+  leanda-ng-events:
+    address: leanda-ng-events
+    description: Main event channel for all domain events
+    messages:
+      userCreated:
+        $ref: '#/components/messages/UserCreated'
+      userUpdated:
+        $ref: '#/components/messages/UserUpdated'
+      userDeleted:
+        $ref: '#/components/messages/UserDeleted'
+      fileCreated:
+        $ref: '#/components/messages/FileCreated'
+
+components:
+  messages:
+    UserCreated:
+      name: UserCreated
+      title: User Created Event
+      summary: Published when a new user is created
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserCreated'
+      traits:
+        - $ref: '#/components/messageTraits/CommonFields'
+    
+    UserUpdated:
+      name: UserUpdated
+      title: User Updated Event
+      summary: Published when a user's information is updated
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserUpdated'
+      traits:
+        - $ref: '#/components/messageTraits/CommonFields'
+    
+    UserDeleted:
+      name: UserDeleted
+      title: User Deleted Event
+      summary: Published when a user is deleted
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserDeleted'
+      traits:
+        - $ref: '#/components/messageTraits/CommonFields'
+    
+    FileCreated:
+      name: FileCreated
+      title: File Created Event
+      summary: Published when a new file is uploaded/created
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileCreated'
+      traits:
+        - $ref: '#/components/messageTraits/CommonFields'
+
+  schemas:
+    UserCreated:
+      type: object
+      required:
+        - id
+        - userId
+        - timestamp
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User ID
+        userId:
+          type: string
+          format: uuid
+          description: ID of user who created this user
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        version:
+          type: integer
+          description: Event version
+        displayName:
+          type: string
+          description: User display name
+        firstName:
+          type: string
+          description: User first name
+        lastName:
+          type: string
+          description: User last name
+        loginName:
+          type: string
+          description: User login name
+        email:
+          type: string
+          format: email
+          description: User email address
+        avatar:
+          type: string
+          description: Avatar URL or path
+    
+    UserUpdated:
+      type: object
+      required:
+        - id
+        - userId
+        - timestamp
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User ID
+        userId:
+          type: string
+          format: uuid
+          description: ID of user who updated this user
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        version:
+          type: integer
+          description: Event version
+        displayName:
+          type: string
+          description: User display name
+        firstName:
+          type: string
+          description: User first name
+        lastName:
+          type: string
+          description: User last name
+        email:
+          type: string
+          format: email
+          description: User email address
+        avatar:
+          type: string
+          description: Avatar URL or path
+    
+    UserDeleted:
+      type: object
+      required:
+        - id
+        - userId
+        - timestamp
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: User ID
+        userId:
+          type: string
+          format: uuid
+          description: ID of user who deleted this user
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        version:
+          type: integer
+          description: Event version
+    
+    FileCreated:
+      type: object
+      required:
+        - id
+        - userId
+        - timestamp
+        - version
+        - bucket
+        - blobId
+        - fileName
+        - length
+        - fileStatus
+        - fileType
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File ID
+        userId:
+          type: string
+          format: uuid
+          description: ID of user who created the file
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        version:
+          type: integer
+          description: Event version
+        bucket:
+          type: string
+          description: Blob storage bucket
+        blobId:
+          type: string
+          format: uuid
+          description: Blob ID in bucket
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Parent folder ID (null for root)
+        fileName:
+          type: string
+          description: File name
+        length:
+          type: integer
+          format: int64
+          description: File length in bytes
+        md5:
+          type: string
+          description: MD5 hash of file
+        fileStatus:
+          type: string
+          enum: [Loading, Loaded, Parsing, Parsed, Processing, Processed, ProcessedPartially, Failed]
+          description: Current file processing status
+        fileType:
+          type: string
+          enum: [Generic, Office, Model, Records, Tabular, Pdf, WebPage, Image, Microscopy]
+          description: File type
+
+  messageTraits:
+    CommonFields:
+      description: Common fields present in all domain events
+

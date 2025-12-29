@@ -1,0 +1,84 @@
+---
+description: AWS FinOps and cost optimization patterns
+globs: ["**/aws/**", "**/*.cdk.ts", "**/*.py"]
+alwaysApply: false
+---
+
+AWS FinOps and cost optimization standards for Leanda.io:
+
+## Cost Visibility
+- Tag ALL AWS resources with mandatory tags:
+  - `Project`: leanda
+  - `Environment`: dev | staging | prod
+  - `Owner`: team or individual email
+  - `CostCenter`: department or budget code
+- Use AWS Cost Explorer weekly to identify cost anomalies
+- Set up AWS Budgets with alerts at 50%, 80%, and 100% thresholds
+- Enable Cost Allocation Tags in AWS Billing console
+- Review AWS Trusted Advisor cost optimization recommendations monthly
+- Use AWS Cost Anomaly Detection for automated cost monitoring
+
+## Compute Optimization
+- Use AWS Compute Optimizer for right-sizing recommendations (EC2, ECS, Lambda)
+- Prefer Graviton (ARM) instances for 20-40% cost savings (Graviton3, Graviton4)
+- Use Spot Instances for SageMaker training jobs (up to 90% savings)
+  - Implement checkpointing for long-running training jobs
+  - Use Spot instance interruption handling
+- Implement auto-scaling with target tracking policies (scale based on CPU, memory, custom metrics)
+- Schedule non-production resources to stop outside business hours (use EventBridge Scheduler)
+- Use Reserved Instances or Savings Plans for predictable workloads (1-year or 3-year commitments)
+
+## Storage Optimization
+- Use S3 Intelligent-Tiering for unpredictable access patterns (automatic cost optimization)
+- Move cold scientific data to S3 Glacier Deep Archive (lowest cost, 12-hour retrieval)
+- Enable S3 Lifecycle policies:
+  - Transition to Standard-IA after 30 days
+  - Transition to Glacier after 90 days
+  - Transition to Deep Archive after 180 days
+- Use S3 Storage Lens for visibility into storage usage and optimization opportunities
+- Clean up incomplete multipart uploads automatically (lifecycle policy)
+- Enable S3 request metrics to identify expensive operations
+- Use S3 Select and S3 Glacier Select for querying without full object retrieval
+
+## Serverless Optimization
+- Right-size Lambda memory using AWS Lambda Power Tuning tool
+  - Test different memory configurations (128MB to 10GB)
+  - Balance cost vs execution time (CPU scales with memory)
+- Use Provisioned Concurrency only for latency-critical user-facing APIs
+- Prefer ARM64 Lambda runtime for 20% cost savings and better performance
+- Set appropriate timeouts to prevent runaway costs (default: 3s, max: 15min)
+- Use Reserved Concurrency to prevent cost spikes from concurrent executions
+- Optimize Lambda package size (use layers for dependencies, remove unused code)
+- Use Lambda SnapStart for Java functions (faster cold starts, lower costs)
+
+## Database Optimization
+- Use RDS Reserved Instances for production databases (1-year or 3-year)
+- Enable RDS Performance Insights to identify optimization opportunities
+- Use Aurora Serverless v2 for variable workloads (auto-scaling)
+- Right-size database instances based on actual usage (CPU, memory, I/O)
+- Use read replicas for read-heavy workloads instead of scaling primary
+- Enable database query logging to identify slow queries
+- Use DynamoDB On-Demand billing for unpredictable workloads
+- Use DynamoDB Reserved Capacity for predictable workloads
+
+## Data Transfer Optimization
+- Minimize cross-region data transfer (use same region for related services)
+- Use CloudFront for content delivery (caching reduces origin requests)
+- Use VPC endpoints for AWS service access (reduces NAT Gateway costs)
+- Compress data in transit (gzip, brotli) to reduce transfer costs
+- Use S3 Transfer Acceleration only when necessary (adds cost)
+
+## Monitoring and Alerts
+- Set up AWS Budgets with SNS notifications for cost thresholds
+- Monitor Lambda concurrent executions to prevent throttling (cost spikes)
+- Track Glue DPU-hours and optimize job configurations (right-size DPU allocation)
+- Alert on unexpected S3 request patterns (high request counts, large data transfer)
+- Monitor SageMaker endpoint invocation costs (use batch transform for large datasets)
+- Use AWS Cost Anomaly Detection for automated cost monitoring
+
+## Cost Allocation and Reporting
+- Use AWS Cost Categories for custom cost allocation (by team, project, feature)
+- Generate monthly cost reports by service, environment, and team
+- Review and optimize costs quarterly (FinOps review meetings)
+- Document cost optimization decisions in ADRs
+- Track cost per user, cost per data volume, cost per API call (unit economics)

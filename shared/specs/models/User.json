@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leanda.io/schemas/User.json",
+  "title": "User",
+  "description": "User entity representing a platform user. Extracted from Sds.Osdr.Generic.Domain.User",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique user identifier"
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Display name shown in UI"
+    },
+    "firstName": {
+      "type": "string",
+      "description": "User's first name"
+    },
+    "lastName": {
+      "type": "string",
+      "description": "User's last name"
+    },
+    "loginName": {
+      "type": "string",
+      "description": "Login/username for authentication"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "User's email address"
+    },
+    "avatar": {
+      "type": "string",
+      "description": "URL or data URI for user's avatar image"
+    },
+    "createdBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who created this user"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updatedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who last updated this user"
+    },
+    "updatedDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Aggregate version for optimistic concurrency"
+    }
+  },
+  "required": ["id"],
+  "additionalProperties": false,
+  "x-mongodb-collection": "Users",
+  "x-mongodb-indexes": [
+    {
+      "name": "idx_user_email",
+      "fields": { "email": 1 },
+      "unique": true,
+      "sparse": true
+    },
+    {
+      "name": "idx_user_loginName",
+      "fields": { "loginName": 1 },
+      "unique": true
+    }
+  ]
+}
+

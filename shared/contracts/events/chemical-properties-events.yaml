@@ -1,0 +1,202 @@
+asyncapi: '2.6.0'
+info:
+  title: Chemical Properties Service Events
+  version: '1.0.0'
+  description: |
+    AsyncAPI specification for Chemical Properties calculation service.
+    Migrated from Java 8/Spring Boot to Java 21/Quarkus.
+    Replaces RabbitMQ with Kafka.
+
+servers:
+  kafka:
+    url: localhost:9092
+    protocol: kafka
+    description: Kafka broker for chemical properties events
+
+channels:
+  chemical-properties-commands:
+    description: Commands to calculate chemical properties for a molecule
+    publish:
+      message:
+        $ref: '#/components/messages/CalculateChemicalPropertiesCommand'
+  
+  chemical-properties-calculated:
+    description: Event published when properties have been successfully calculated
+    subscribe:
+      message:
+        $ref: '#/components/messages/ChemicalPropertiesCalculatedEvent'
+  
+  chemical-properties-calculation-failed:
+    description: Event published when property calculation fails
+    subscribe:
+      message:
+        $ref: '#/components/messages/ChemicalPropertiesCalculationFailedEvent'
+
+components:
+  messages:
+    CalculateChemicalPropertiesCommand:
+      name: CalculateChemicalPropertiesCommand
+      title: Calculate Chemical Properties Command
+      summary: Command to calculate molecular properties
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CalculateChemicalPropertiesCommand'
+    
+    ChemicalPropertiesCalculatedEvent:
+      name: ChemicalPropertiesCalculatedEvent
+      title: Chemical Properties Calculated Event
+      summary: Published when properties have been successfully calculated
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ChemicalPropertiesCalculatedEvent'
+    
+    ChemicalPropertiesCalculationFailedEvent:
+      name: ChemicalPropertiesCalculationFailedEvent
+      title: Chemical Properties Calculation Failed Event
+      summary: Published when property calculation fails
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ChemicalPropertiesCalculationFailedEvent'
+
+  schemas:
+    CalculateChemicalPropertiesCommand:
+      type: object
+      required:
+        - Id
+        - BlobId
+        - Bucket
+        - UserId
+        - CorrelationId
+      properties:
+        Id:
+          type: string
+          format: uuid
+          description: Record ID
+        BlobId:
+          type: string
+          format: uuid
+          description: Blob storage ID (MOL file)
+        Bucket:
+          type: string
+          description: Storage bucket name
+        UserId:
+          type: string
+          format: uuid
+          description: User ID
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID for saga orchestration
+    
+    ChemicalPropertiesCalculatedEvent:
+      type: object
+      required:
+        - Id
+        - UserId
+        - TimeStamp
+        - Result
+        - CorrelationId
+      properties:
+        Id:
+          type: string
+          format: uuid
+          description: Record ID
+        UserId:
+          type: string
+          format: uuid
+          description: User ID
+        TimeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+        Result:
+          $ref: '#/components/schemas/CalculatedProperties'
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID for saga orchestration
+    
+    ChemicalPropertiesCalculationFailedEvent:
+      type: object
+      required:
+        - Id
+        - UserId
+        - TimeStamp
+        - CalculationException
+        - CorrelationId
+      properties:
+        Id:
+          type: string
+          format: uuid
+          description: Record ID
+        UserId:
+          type: string
+          format: uuid
+          description: User ID
+        TimeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+        CalculationException:
+          type: string
+          description: Error message or exception details
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID for saga orchestration
+    
+    CalculatedProperties:
+      type: object
+      required:
+        - Issues
+        - Properties
+      properties:
+        Issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/Issue'
+          description: Validation issues (currently empty list)
+        Properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/Property'
+          description: Calculated molecular properties
+    
+    Issue:
+      type: object
+      description: Validation issue (structure preserved for compatibility)
+      properties:
+        Severity:
+          type: number
+          format: double
+          description: Issue severity
+        Message:
+          type: string
+          description: Issue message
+    
+    Property:
+      type: object
+      required:
+        - Name
+        - Value
+        - Error
+      properties:
+        Name:
+          type: string
+          description: Property name (SMILES, MOLECULAR_FORMULA, MOLECULAR_WEIGHT, etc.)
+          enum:
+            - SMILES
+            - MOLECULAR_FORMULA
+            - MOLECULAR_WEIGHT
+            - MONOISOTOPIC_MASS
+            - MOST_ABUNDANT_MASS
+            - InChI
+            - InChIKey
+        Value:
+          type: string
+          description: Property value as string
+        Error:
+          type: number
+          format: double
+          description: Error/severity (0.0 = no issue)
+

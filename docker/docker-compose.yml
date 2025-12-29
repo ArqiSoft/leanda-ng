@@ -1,0 +1,606 @@
+# Leanda NG - Unified Docker Compose
+# All services are now in the consolidated /services folder
+
+services:
+  # ============================================
+  # INFRASTRUCTURE SERVICES
+  # ============================================
+
+  # MongoDB - DocumentDB compatible
+  mongodb:
+    image: mongo:7.0
+    container_name: leanda-ng-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE:-leanda-ng}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - leanda-ng-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Redis - Cache
+  redis:
+    image: redis:7.2-alpine
+    container_name: leanda-ng-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - leanda-ng-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Redpanda - Kafka compatible
+  redpanda:
+    image: docker.redpanda.com/vectorized/redpanda:latest
+    container_name: leanda-ng-redpanda
+    command:
+      - redpanda
+      - start
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr
+      - internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr
+      - internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr
+      - internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --advertise-rpc-addr
+      - redpanda:33145
+      - --smp
+      - '1'
+      - --memory
+      - 1G
+      - --mode dev-container
+      - --default-log-level=info
+    ports:
+      - "19092:19092"  # Kafka external
+      - "18081:18081"  # Schema Registry external
+      - "18082:18082"  # Pandaproxy external
+      - "19644:9644"   # Admin API
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+    networks:
+      - leanda-ng-network
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'Healthy' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # OpenSearch - Search engine
+  opensearch:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: leanda-ng-opensearch
+    ports:
+      - "${OPENSEARCH_PORT:-9200}:9200"
+      - "${OPENSEARCH_PORT_TRANSPORT:-9300}:9300"
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    networks:
+      - leanda-ng-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # MinIO - S3 compatible storage
+  minio:
+    image: minio/minio:latest
+    container_name: leanda-ng-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - leanda-ng-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: unless-stopped
+
+  # ============================================
+  # CORE SERVICES
+  # ============================================
+
+  # Core API Service
+  core-api:
+    build:
+      context: ../services/core-api
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-core-api
+    ports:
+      - "${CORE_API_PORT:-8080}:8080"
+      - "5000:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8080
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb:27017/leanda-ng?authSource=admin
+      MONGO_DATABASE: leanda-ng
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+    volumes:
+      - ../services/core-api/src:/app/src:ro
+      - ../services/core-api/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Blob Storage Service
+  blob-storage:
+    build:
+      context: ../services/blob-storage
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-blob-storage
+    ports:
+      - "${BLOB_STORAGE_PORT:-8084}:8084"
+      - "5004:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8084
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb:27017/leanda-ng?authSource=admin
+      MONGODB_DATABASE: leanda-ng
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+    volumes:
+      - ../services/blob-storage/src:/app/src:ro
+      - ../services/blob-storage/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # ============================================
+  # DOMAIN PARSERS
+  # ============================================
+
+  # Chemical Parser Service
+  chemical-parser:
+    build:
+      context: ../services/chemical-parser
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-chemical-parser
+    ports:
+      - "${CHEMICAL_PARSER_PORT:-8083}:8083"
+      - "5003:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8083
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      BLOB_STORAGE_URL: ${BLOB_STORAGE_URL:-http://blob-storage:8084}
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb:27017/leanda-ng?authSource=admin
+      OSDR_TEMP_FILES_FOLDER: /tmp
+    volumes:
+      - ../services/chemical-parser/src:/app/src:ro
+      - ../services/chemical-parser/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Chemical Properties Service
+  chemical-properties:
+    build:
+      context: ../services/chemical-properties
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-chemical-properties
+    ports:
+      - "${CHEMICAL_PROPERTIES_PORT:-8086}:8086"
+      - "5006:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8086
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      BLOB_STORAGE_URL: ${BLOB_STORAGE_URL:-http://blob-storage:8084}
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb:27017/leanda-ng?authSource=admin
+    volumes:
+      - ../services/chemical-properties/src:/app/src:ro
+      - ../services/chemical-properties/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      chemical-parser:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Reaction Parser Service
+  reaction-parser:
+    build:
+      context: ../services/reaction-parser
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-reaction-parser
+    ports:
+      - "${REACTION_PARSER_PORT:-8087}:8087"
+      - "5007:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8087
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      BLOB_STORAGE_URL: ${BLOB_STORAGE_URL:-http://blob-storage:8084}
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb:27017/leanda-ng?authSource=admin
+      OSDR_TEMP_FILES_FOLDER: /tmp
+    volumes:
+      - ../services/reaction-parser/src:/app/src:ro
+      - ../services/reaction-parser/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8087/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Crystal Parser Service
+  crystal-parser:
+    build:
+      context: ../services/crystal-parser
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-crystal-parser
+    ports:
+      - "${CRYSTAL_PARSER_PORT:-8089}:8080"
+      - "5009:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8080
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      BLOB_STORAGE_URL: ${BLOB_STORAGE_URL:-http://blob-storage:8084}
+    volumes:
+      - ../services/crystal-parser/src:/app/src:ro
+      - ../services/crystal-parser/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      blob-storage:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Spectra Parser Service
+  spectra-parser:
+    build:
+      context: ../services/spectra-parser
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-spectra-parser
+    ports:
+      - "${SPECTRA_PARSER_PORT:-8090}:8080"
+      - "5010:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8080
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      BLOB_STORAGE_URL: ${BLOB_STORAGE_URL:-http://blob-storage:8084}
+    volumes:
+      - ../services/spectra-parser/src:/app/src:ro
+      - ../services/spectra-parser/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      blob-storage:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # ============================================
+  # PROCESSING SERVICES
+  # ============================================
+
+  # Office Processor Service
+  office-processor:
+    build:
+      context: ../services/office-processor
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-office-processor
+    ports:
+      - "${OFFICE_PROCESSOR_PORT:-8088}:8080"
+      - "5008:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8080
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      BLOB_STORAGE_URL: ${BLOB_STORAGE_URL:-http://blob-storage:8084}
+    volumes:
+      - ../services/office-processor/src:/app/src:ro
+      - ../services/office-processor/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      blob-storage:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Imaging Service
+  imaging:
+    build:
+      context: ../services/imaging
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-imaging
+    ports:
+      - "${IMAGING_PORT:-8091}:8080"
+      - "5011:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8080
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      BLOB_STORAGE_URL: ${BLOB_STORAGE_URL:-http://blob-storage:8084}
+    volumes:
+      - ../services/imaging/src:/app/src:ro
+      - ../services/imaging/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      blob-storage:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Metadata Processing Service
+  metadata-processing:
+    build:
+      context: ../services/metadata-processing
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-metadata-processing
+    ports:
+      - "${METADATA_PROCESSING_PORT:-8098}:8088"
+      - "5018:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8088
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb:27017/leanda-ng?authSource=admin
+      MONGODB_DATABASE: leanda-ng
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+    volumes:
+      - ../services/metadata-processing/src:/app/src:ro
+      - ../services/metadata-processing/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # Indexing Service
+  indexing:
+    build:
+      context: ../services/indexing
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-indexing
+    ports:
+      - "${INDEXING_PORT:-8099}:8089"
+      - "5019:5005"  # Debug port
+    environment:
+      QUARKUS_HTTP_PORT: 8089
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb:27017/leanda-ng?authSource=admin
+      MONGODB_DATABASE: leanda-ng
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      OPENSEARCH_ENDPOINT: http://opensearch:9200
+      BLOB_STORAGE_URL: http://blob-storage:8084
+    volumes:
+      - ../services/indexing/src:/app/src:ro
+      - ../services/indexing/pom.xml:/app/pom.xml:ro
+      - maven_cache:/root/.m2
+    networks:
+      - leanda-ng-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+      blob-storage:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8089/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+
+  # ============================================
+  # MONITORING SERVICES
+  # ============================================
+
+  # Prometheus - Metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: leanda-ng-prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - leanda-ng-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Grafana - Metrics visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: leanda-ng-grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: ""
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - leanda-ng-network
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
+  redis_data:
+    driver: local
+  redpanda_data:
+    driver: local
+  maven_cache:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  opensearch_data:
+    driver: local
+  minio_data:
+    driver: local
+
+networks:
+  leanda-ng-network:
+    driver: bridge
+    name: leanda-ng-network
+

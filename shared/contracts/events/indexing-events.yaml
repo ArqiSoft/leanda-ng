@@ -1,0 +1,259 @@
+asyncapi: 2.6.0
+info:
+  title: Indexing Service Events
+  version: 1.0.0
+  description: |
+    Events consumed and published by the Indexing service.
+    
+    This service indexes entities (Files, Folders, Records, Users, Models)
+    to OpenSearch for full-text search functionality.
+  contact:
+    name: Leanda.io Team
+    email: support@leanda.io
+
+servers:
+  development:
+    url: localhost:9092
+    protocol: kafka
+    description: Local Kafka broker for development
+  production:
+    url: ${KAFKA_BOOTSTRAP_SERVERS}
+    protocol: kafka
+    description: Production Kafka cluster
+
+channels:
+  file-events:
+    description: File-related events consumed for indexing
+    subscribe:
+      operationId: receiveFileEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/FilePersistedEvent'
+          - $ref: '#/components/messages/FileDeletedEvent'
+          - $ref: '#/components/messages/PermissionsChangedEvent'
+
+  folder-events:
+    description: Folder-related events consumed for indexing
+    subscribe:
+      operationId: receiveFolderEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/FolderPersistedEvent'
+          - $ref: '#/components/messages/FolderDeletedEvent'
+
+  record-events:
+    description: Record-related events consumed for indexing
+    subscribe:
+      operationId: receiveRecordEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/RecordPersistedEvent'
+          - $ref: '#/components/messages/RecordDeletedEvent'
+
+  indexing-events:
+    description: Events published after entity indexing
+    publish:
+      operationId: publishIndexingEvent
+      message:
+        $ref: '#/components/messages/EntityIndexedEvent'
+
+components:
+  messages:
+    FilePersistedEvent:
+      name: FilePersistedEvent
+      title: File Persisted Event
+      summary: Event indicating a file has been persisted and should be indexed
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+          - fileName
+          - ownedBy
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: The file ID
+          fileName:
+            type: string
+            description: The file name
+          ownedBy:
+            type: string
+            format: uuid
+            description: The user who owns the file
+          parentId:
+            type: string
+            format: uuid
+            description: The parent folder ID
+
+    FileDeletedEvent:
+      name: FileDeletedEvent
+      title: File Deleted Event
+      summary: Event indicating a file has been deleted
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: The file ID
+
+    FolderPersistedEvent:
+      name: FolderPersistedEvent
+      title: Folder Persisted Event
+      summary: Event indicating a folder has been persisted
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+          - name
+          - ownedBy
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: The folder ID
+          name:
+            type: string
+            description: The folder name
+          ownedBy:
+            type: string
+            format: uuid
+            description: The user who owns the folder
+          parentId:
+            type: string
+            format: uuid
+            description: The parent folder ID
+
+    FolderDeletedEvent:
+      name: FolderDeletedEvent
+      title: Folder Deleted Event
+      summary: Event indicating a folder has been deleted
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: The folder ID
+
+    RecordPersistedEvent:
+      name: RecordPersistedEvent
+      title: Record Persisted Event
+      summary: Event indicating a record has been persisted
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+          - fileId
+          - ownedBy
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: The record ID
+          fileId:
+            type: string
+            format: uuid
+            description: The parent file ID
+          ownedBy:
+            type: string
+            format: uuid
+            description: The user who owns the record
+
+    RecordDeletedEvent:
+      name: RecordDeletedEvent
+      title: Record Deleted Event
+      summary: Event indicating a record has been deleted
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: The record ID
+          fileId:
+            type: string
+            format: uuid
+            description: The parent file ID
+
+    PermissionsChangedEvent:
+      name: PermissionsChangedEvent
+      title: Permissions Changed Event
+      summary: Event indicating permissions have changed for an entity
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: The entity ID
+          entityType:
+            type: string
+            enum: [file, folder, record]
+            description: The type of entity
+          isPublic:
+            type: boolean
+            description: Whether the entity is publicly accessible
+          users:
+            type: array
+            items:
+              type: string
+              format: uuid
+            description: User IDs with access
+          groups:
+            type: array
+            items:
+              type: string
+              format: uuid
+            description: Group IDs with access
+
+    EntityIndexedEvent:
+      name: EntityIndexedEvent
+      title: Entity Indexed Event
+      summary: Event published when an entity has been successfully indexed
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+          - entityId
+          - entityType
+          - indexName
+          - timestamp
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: Unique event ID
+          entityId:
+            type: string
+            format: uuid
+            description: The ID of the indexed entity
+          entityType:
+            type: string
+            enum: [file, folder, record, user, model]
+            description: The type of entity
+          indexName:
+            type: string
+            description: The OpenSearch index name
+          timestamp:
+            type: string
+            format: date-time
+            description: When the entity was indexed
+

@@ -1,0 +1,14 @@
+---
+description: Java / Quarkus microservices standards
+globs: ["**/*.java", "**/pom.xml"]
+---
+
+Java standards for Leanda.io backend services:
+- Java 25 LTS + Quarkus 3.15+ (native compilation preferred for Lambda)
+- Use records, sealed classes, pattern matching
+- REST: RESTEasy Reactive + OpenAPI v3
+- Reactive: Mutiny everywhere possible
+- Testing: QuarkusTest + RestAssured + WireMock
+- Dependency injection: always use @Inject, avoid statics
+- Follow hexagonal/clean architecture
+- Always validate inputs with Hibernate Validator + Bean Validation

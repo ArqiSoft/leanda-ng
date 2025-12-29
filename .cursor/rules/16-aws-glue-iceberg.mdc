@@ -1,0 +1,103 @@
+---
+description: AWS Glue and Apache Iceberg data lakehouse patterns
+globs: ["**/aws/**", "**/*.py", "**/*.cdk.ts"]
+alwaysApply: false
+---
+
+AWS Glue and Apache Iceberg standards for Leanda.io:
+
+## Glue Job Optimization
+- Use Glue 4.0+ with Spark 3.3+ for Apache Iceberg support
+- Prefer Glue Flex execution for non-time-critical ETL (lower cost, flexible scaling)
+- Right-size DPU allocation:
+  - Start with 2 DPU for small jobs
+  - Scale up based on data volume and processing time
+  - Use Glue Auto Scaling for variable workloads
+- Enable job bookmarks for incremental processing (track processed data)
+- Use Glue Data Quality for automated data validation:
+  - Define data quality rules (completeness, validity, uniqueness)
+  - Monitor data quality metrics and alert on violations
+- Optimize Spark configurations:
+  - Set appropriate executor memory and cores
+  - Use dynamic allocation for variable workloads
+  - Configure shuffle partitions based on data size
+
+## Iceberg Best Practices
+- Partition by date/domain for time-series scientific data:
+  - Use hidden partitioning (days, months) over explicit columns
+  - Partition by `date_trunc('day', timestamp)` for daily partitions
+  - Partition by domain (chemical, crystal, microscopy) for multi-tenant data
+- Configure compaction:
+  - Target file size: 128-512MB (balance query performance and write overhead)
+  - Run compaction regularly (daily or weekly)
+  - Use Iceberg's built-in compaction strategies
+- Enable table maintenance:
+  - Expire old snapshots (retain last 7 days for time travel)
+  - Remove orphan files (clean up deleted data files)
+  - Run maintenance jobs on schedule (EventBridge + Lambda)
+- Use Iceberg's schema evolution instead of table recreation:
+  - Add columns with `ALTER TABLE ADD COLUMN`
+  - Rename columns with `ALTER TABLE RENAME COLUMN`
+  - Evolve column types when compatible
+
+## Performance Optimization
+- Use predicate pushdown for efficient queries:
+  - Filter on partition columns in WHERE clause
+  - Use partition pruning to skip irrelevant partitions
+- Configure metadata table caching in Athena/Spark:
+  - Cache manifest files for frequently queried tables
+  - Use Spark cache for small lookup tables
+- Use sorted columns for frequently filtered fields:
+  - Sort data by commonly queried columns
+  - Improve query performance with sorted data files
+- Enable row-level delete for GDPR/data correction:
+  - Use `DELETE FROM table WHERE condition` for selective deletes
+  - Use `MERGE INTO` for upsert operations
+- Prefer MERGE INTO for upsert operations:
+  - Atomic upsert with conflict resolution
+  - Better performance than delete + insert
+
+## Governance
+- Register all tables in AWS Glue Data Catalog:
+  - Use consistent naming: `{database}.{table_name}`
+  - Include table descriptions and column comments
+- Apply Lake Formation permissions at column level:
+  - Grant column-level access for sensitive data
+  - Use data cells for fine-grained access control
+- Enable data lineage tracking:
+  - Document data sources and transformation steps
+  - Use AWS Glue Data Lineage for automatic lineage
+- Use table properties for metadata:
+  - `owner`: Team or individual responsible
+  - `classification`: Data classification (public, internal, confidential)
+  - `description`: Table purpose and usage
+- Implement table versioning with meaningful commit messages:
+  - Document schema changes and data migrations
+  - Track table evolution over time
+
+## Data Quality
+- Validate data before writing to Iceberg tables:
+  - Check data types and formats
+  - Validate required fields and constraints
+  - Detect and handle duplicate records
+- Use Glue Data Quality for automated validation:
+  - Define data quality rules (completeness, validity, uniqueness)
+  - Monitor data quality metrics and alert on violations
+- Implement data profiling:
+  - Analyze data distributions and patterns
+  - Identify data quality issues early
+- Document data quality expectations in table metadata
+
+## Schema Management
+- Use explicit schemas for all Iceberg tables (avoid schema inference)
+- Version schemas and document changes in ADRs
+- Use nullable columns appropriately (avoid nulls when possible)
+- Define appropriate data types (use smallest type that fits)
+- Add column comments for documentation
+
+## Query Optimization
+- Use partition pruning in WHERE clauses
+- Use column pruning (SELECT only needed columns)
+- Use predicate pushdown for filters
+- Use LIMIT for exploratory queries
+- Use appropriate file formats (Parquet for analytics, ORC for Hive compatibility)

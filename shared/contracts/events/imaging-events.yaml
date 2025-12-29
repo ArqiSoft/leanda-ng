@@ -1,0 +1,204 @@
+asyncapi: 3.0.0
+info:
+  title: Imaging Service Events
+  version: 1.0.0
+  description: |
+    Event contracts for Imaging Service.
+    Handles thumbnail generation from various scientific file formats.
+
+servers:
+  kafka:
+    host: localhost:9092
+    protocol: kafka
+    description: Kafka broker for event streaming
+
+channels:
+  imaging-commands:
+    address: imaging-commands
+    description: Commands for generating images
+    messages:
+      GenerateImageCommand:
+        $ref: '#/components/messages/GenerateImageCommand'
+
+  imaging-events:
+    address: imaging-events
+    description: Events published by imaging service
+    messages:
+      ImageGeneratedEvent:
+        $ref: '#/components/messages/ImageGeneratedEvent'
+      ImageGenerationFailedEvent:
+        $ref: '#/components/messages/ImageGenerationFailedEvent'
+
+operations:
+  generateImage:
+    action: receive
+    channel:
+      $ref: '#/channels/imaging-commands'
+    title: Receive GenerateImage command
+    description: Consumes GenerateImage commands from Kafka
+
+  publishImageGenerated:
+    action: send
+    channel:
+      $ref: '#/channels/imaging-events'
+    title: Publish ImageGenerated event
+    description: Publishes ImageGenerated event when thumbnail is successfully created
+
+  publishImageGenerationFailed:
+    action: send
+    channel:
+      $ref: '#/channels/imaging-events'
+    title: Publish ImageGenerationFailed event
+    description: Publishes ImageGenerationFailed event when thumbnail generation fails
+
+components:
+  messages:
+    GenerateImageCommand:
+      name: GenerateImageCommand
+      title: Generate Image Command
+      summary: Command to generate a thumbnail image from a file
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/GenerateImageCommand'
+
+    ImageGeneratedEvent:
+      name: ImageGeneratedEvent
+      title: Image Generated Event
+      summary: Event published when thumbnail is successfully generated
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ImageGeneratedEvent'
+
+    ImageGenerationFailedEvent:
+      name: ImageGenerationFailedEvent
+      title: Image Generation Failed Event
+      summary: Event published when thumbnail generation fails
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ImageGenerationFailedEvent'
+
+  schemas:
+    GenerateImageCommand:
+      type: object
+      required:
+        - id
+        - blobId
+        - bucket
+        - userId
+        - image
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File/Record ID
+        blobId:
+          type: string
+          format: uuid
+          description: Source blob storage ID
+        bucket:
+          type: string
+          description: Storage bucket name
+        userId:
+          type: string
+          format: uuid
+          description: User ID who initiated the generation
+        image:
+          $ref: '#/components/schemas/Image'
+          description: Image metadata (id, width, height, mimeType)
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID for request tracking
+
+    ImageGeneratedEvent:
+      type: object
+      required:
+        - id
+        - userId
+        - image
+        - blobId
+        - bucket
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File/Record ID
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+        timeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        image:
+          $ref: '#/components/schemas/Image'
+          description: Generated image metadata
+        blobId:
+          type: string
+          format: uuid
+          description: Blob storage ID of generated thumbnail
+        bucket:
+          type: string
+          description: Storage bucket name
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID from original command
+
+    ImageGenerationFailedEvent:
+      type: object
+      required:
+        - id
+        - userId
+        - image
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File/Record ID
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+        timeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        image:
+          $ref: '#/components/schemas/Image'
+          description: Image metadata with exception message
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID from original command
+
+    Image:
+      type: object
+      required:
+        - id
+        - width
+        - height
+        - format
+        - mimeType
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Image ID
+        width:
+          type: integer
+          description: Image width in pixels
+        height:
+          type: integer
+          description: Image height in pixels
+        format:
+          type: string
+          description: Image format (e.g., "png", "jpeg")
+        mimeType:
+          type: string
+          description: MIME type (e.g., "image/png", "image/jpeg")
+        exception:
+          type: string
+          description: Exception message (only present in failure events)
+

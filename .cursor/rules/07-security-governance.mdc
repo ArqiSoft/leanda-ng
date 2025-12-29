@@ -1,0 +1,61 @@
+---
+description: Security and compliance governance patterns
+globs: ["**/*"]
+alwaysApply: true
+---
+
+Security and compliance standards for Leanda.io:
+
+## Secrets and Credentials
+- NEVER hardcode secrets, API keys, passwords, or credentials in code
+- ALWAYS use AWS Secrets Manager or Systems Manager Parameter Store (SecureString)
+- Use IAM roles and instance profiles instead of access keys when possible
+- Rotate secrets regularly (automate with Secrets Manager rotation)
+- Never log secrets, credentials, or sensitive data (PII, PHI)
+
+## Authentication and Authorization
+- Require authentication checks on ALL API endpoints (no anonymous access)
+- Enforce least-privilege IAM policies (grant minimum permissions needed)
+- Use AWS Cognito or IAM for user authentication
+- Implement role-based access control (RBAC) with Lake Formation for data access
+- Use OIDC/OAuth2 for third-party integrations
+- Never disable SSL/TLS verification, even in development
+
+## Input Validation
+- Validate and sanitize ALL inputs at API boundaries
+- Use parameterized queries to prevent SQL injection
+- Validate file uploads (type, size, content scanning)
+- Implement rate limiting on public endpoints
+- Use AWS WAF for API Gateway protection
+
+## Encryption
+- Encrypt data at rest using AWS KMS (customer-managed keys preferred)
+- Encrypt data in transit using TLS 1.2+ (enforce HTTPS)
+- Use AWS managed encryption keys for S3, RDS, DocumentDB
+- Encrypt sensitive fields in databases (use application-level encryption if needed)
+- Never store encryption keys in code or configuration files
+
+## OWASP Top 10 Protection
+- Prevent injection attacks (SQL, NoSQL, command, LDAP)
+- Implement proper authentication and session management
+- Protect sensitive data (PII, scientific data) with encryption
+- Validate XML/JSON inputs to prevent XXE attacks
+- Implement proper error handling (don't expose stack traces)
+- Keep dependencies updated (use Dependabot, Snyk)
+- Implement security logging and monitoring
+- Use secure defaults (HTTPS, secure cookies, CSP headers)
+
+## Compliance and Auditing
+- Enable AWS CloudTrail for all API activity logging
+- Use AWS Config for compliance monitoring
+- Implement data retention policies per GDPR/CCPA requirements
+- Document data processing activities (data mapping)
+- Regular security audits and penetration testing
+- Maintain security incident response procedures
+
+## Vulnerability Management
+- Scan dependencies for known vulnerabilities (npm audit, mvn dependency-check, pip-audit)
+- Use AWS Security Hub for centralized security findings
+- Patch systems promptly (automate with Systems Manager Patch Manager)
+- Review and update security groups and NACLs regularly
+- Use AWS GuardDuty for threat detection

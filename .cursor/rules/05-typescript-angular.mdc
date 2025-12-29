@@ -1,0 +1,13 @@
+---
+description: Frontend TypeScript / Angular standards
+globs: ["**/*.ts", "**/*.html", "**/*.scss"]
+---
+
+TypeScript / Angular standards:
+- Angular 21+ (zoneless + signals by default)
+- Strict typing: no any, use interfaces over types when possible
+- Prefer signals + functional components + inject()
+- State: NgRx Signal Store or built-in signals
+- Styling: TailwindCSS + Angular Material components
+- Testing: Jasmine + Karma + Spectator
+- Always lazy load routes & use OnPush change detection

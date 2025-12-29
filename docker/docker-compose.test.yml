@@ -1,0 +1,331 @@
+# Docker Compose for Running All Tests Locally
+# This compose file sets up a complete test environment
+
+services:
+  # ============================================
+  # INFRASTRUCTURE SERVICES (for tests)
+  # ============================================
+
+  mongodb-test:
+    image: mongo:7.0
+    container_name: leanda-ng-mongodb-test
+    ports:
+      - "27018:27017"  # Different port to avoid conflicts
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: leanda-ng-test
+    networks:
+      - leanda-ng-test-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  kafka-test:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: leanda-ng-kafka-test
+    ports:
+      - "9093:9092"  # Different port to avoid conflicts
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-test:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9093,PLAINTEXT_INTERNAL://kafka-test:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - leanda-ng-test-network
+    depends_on:
+      zookeeper-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  zookeeper-test:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: leanda-ng-zookeeper-test
+    ports:
+      - "2182:2181"  # Different port to avoid conflicts
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - leanda-ng-test-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  opensearch-test:
+    image: opensearchproject/opensearch:2.11.0
+    container_name: leanda-ng-opensearch-test
+    ports:
+      - "9201:9200"  # Different port to avoid conflicts
+      - "9301:9300"
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms256m -Xmx256m"
+    networks:
+      - leanda-ng-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================
+  # TEST RUNNER SERVICES
+  # ============================================
+
+  # Unit Tests Runner (Java Services)
+  unit-tests-runner:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.test-runner
+    container_name: leanda-ng-unit-tests
+    environment:
+      - TEST_TYPE=unit
+      - JAVA_VERSION=21
+    volumes:
+      - ../services:/workspace/services
+      - ../shared:/workspace/shared
+      - ../tests:/workspace/tests
+      - test-results:/workspace/test-results
+      - maven-cache-test:/root/.m2
+    networks:
+      - leanda-ng-test-network
+    command: >
+      sh -c "
+        echo 'Building shared models first...' &&
+        cd /workspace/shared/models &&
+        mkdir -p target &&
+        mvn clean install -DskipTests && echo 'shared-models: BUILD SUCCESS' || (echo 'shared-models: BUILD FAILURE' && exit 1) &&
+        echo '' &&
+        echo 'Building test-utilities...' &&
+        cd /workspace/tests/utils &&
+        mkdir -p target &&
+        mvn clean install -DskipTests && echo 'test-utilities: BUILD SUCCESS' || (echo 'test-utilities: BUILD FAILURE' && exit 1) &&
+        echo '' &&
+        echo 'Running unit tests for all Java services...' &&
+        for service in core-api blob-storage chemical-parser chemical-properties reaction-parser crystal-parser spectra-parser imaging office-processor metadata-processing indexing; do
+          echo \"Testing service: $$service\" &&
+          cd /workspace/services/$$service &&
+          mkdir -p target/classes target/test-classes &&
+          if mvn test -Dmaven.test.failure.ignore=true; then
+            echo \"$$service: BUILD SUCCESS\" &&
+            cp -r target/surefire-reports /workspace/test-results/$$service-unit-tests/ 2>/dev/null || true
+          else
+            echo \"$$service: BUILD FAILURE\" &&
+            cp -r target/surefire-reports /workspace/test-results/$$service-unit-tests/ 2>/dev/null || true
+          fi
+        done &&
+        echo 'Unit tests completed. Results in /workspace/test-results/'
+      "
+    profiles:
+      - unit-tests
+
+  # Integration Tests Runner
+  integration-tests-runner:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.test-runner
+    container_name: leanda-ng-integration-tests
+    environment:
+      - TEST_TYPE=integration
+      - JAVA_VERSION=21
+      - MONGODB_CONNECTION_STRING=mongodb://admin:admin123@mongodb-test:27017/leanda-ng-test?authSource=admin
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-test:9092
+    volumes:
+      - ../tests:/workspace/tests:ro
+      - ../services:/workspace/services:ro
+      - ../shared:/workspace/shared:ro
+      - test-results:/workspace/test-results
+      - maven-cache-test:/root/.m2
+    networks:
+      - leanda-ng-test-network
+    depends_on:
+      mongodb-test:
+        condition: service_healthy
+      kafka-test:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...' &&
+        sleep 10 &&
+        echo 'Running integration tests...' &&
+        cd /workspace/tests/integration &&
+        mvn verify -DskipITs=false -Dmaven.test.failure.ignore=true &&
+        cp -r target/surefire-reports /workspace/test-results/integration-tests/ 2>/dev/null || true &&
+        echo 'Integration tests completed. Results in /workspace/test-results/'
+      "
+    profiles:
+      - integration-tests
+
+  # E2E Tests Runner (Frontend)
+  e2e-tests-runner:
+    build:
+      context: ../frontend
+      dockerfile: docker/Dockerfile.e2e-runner
+    container_name: leanda-ng-e2e-tests
+    environment:
+      - NODE_VERSION=20
+      - BASE_URL=http://core-api:8080
+    volumes:
+      - ../frontend:/workspace/frontend:ro
+      - test-results:/workspace/test-results
+      - npm-cache-test:/root/.npm
+    networks:
+      - leanda-ng-test-network
+    depends_on:
+      - core-api-test
+      - blob-storage-test
+    command: >
+      sh -c "
+        echo 'Installing Playwright...' &&
+        cd /workspace/frontend &&
+        npm ci &&
+        npx playwright install --with-deps &&
+        echo 'Running E2E tests...' &&
+        npm run e2e &&
+        cp -r playwright-report /workspace/test-results/e2e-tests/ 2>/dev/null || true &&
+        echo 'E2E tests completed. Results in /workspace/test-results/'
+      "
+    profiles:
+      - e2e-tests
+
+  # ============================================
+  # SERVICE CONTAINERS (for integration/E2E tests)
+  # ============================================
+
+  # Core API (for E2E tests)
+  core-api-test:
+    build:
+      context: ../services/core-api
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-core-api-test
+    ports:
+      - "8081:8080"  # Different port to avoid conflicts
+    environment:
+      QUARKUS_HTTP_PORT: 8080
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb-test:27017/leanda-ng-test?authSource=admin
+      KAFKA_BOOTSTRAP_SERVERS: kafka-test:9092
+    networks:
+      - leanda-ng-test-network
+    depends_on:
+      mongodb-test:
+        condition: service_healthy
+      kafka-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    profiles:
+      - e2e-tests
+      - integration-tests
+
+  # Blob Storage (for E2E tests)
+  blob-storage-test:
+    build:
+      context: ../services/blob-storage
+      dockerfile: Dockerfile.dev
+    container_name: leanda-ng-blob-storage-test
+    ports:
+      - "8085:8084"  # Different port to avoid conflicts
+    environment:
+      QUARKUS_HTTP_PORT: 8084
+      MONGODB_CONNECTION_STRING: mongodb://admin:admin123@mongodb-test:27017/leanda-ng-test?authSource=admin
+      KAFKA_BOOTSTRAP_SERVERS: kafka-test:9092
+    networks:
+      - leanda-ng-test-network
+    depends_on:
+      mongodb-test:
+        condition: service_healthy
+      kafka-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    profiles:
+      - e2e-tests
+      - integration-tests
+
+  # All Tests Runner (runs everything)
+  all-tests-runner:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.test-runner
+    container_name: leanda-ng-all-tests
+    environment:
+      - TEST_TYPE=all
+      - JAVA_VERSION=21
+      - MONGODB_CONNECTION_STRING=mongodb://admin:admin123@mongodb-test:27017/leanda-ng-test?authSource=admin
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-test:9092
+    volumes:
+      - ../services:/workspace/services:ro
+      - ../tests:/workspace/tests:ro
+      - ../shared:/workspace/shared:ro
+      - test-results:/workspace/test-results
+      - maven-cache-test:/root/.m2
+    networks:
+      - leanda-ng-test-network
+    depends_on:
+      mongodb-test:
+        condition: service_healthy
+      kafka-test:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '=== Running All Tests ===' &&
+        echo '' &&
+        echo '1. Running unit tests...' &&
+        for service in core-api blob-storage chemical-parser chemical-properties reaction-parser crystal-parser spectra-parser imaging office-processor metadata-processing indexing; do
+          echo \"  Testing: $$service\" &&
+          cd /workspace/services/$$service &&
+          mvn test -Dmaven.test.failure.ignore=true || true
+        done &&
+        echo '' &&
+        echo '2. Running integration tests...' &&
+        cd /workspace/tests/integration &&
+        mvn verify -DskipITs=false -Dmaven.test.failure.ignore=true || true &&
+        echo '' &&
+        echo '3. Collecting test results...' &&
+        mkdir -p /workspace/test-results/summary &&
+        find /workspace -name 'surefire-reports' -type d -exec cp -r {} /workspace/test-results/summary/ \; 2>/dev/null || true &&
+        echo '' &&
+        echo '=== All Tests Completed ===' &&
+        echo 'Results available in test-results volume'
+      "
+    profiles:
+      - all-tests
+
+volumes:
+  test-results:
+    driver: local
+  maven-cache-test:
+    driver: local
+  npm-cache-test:
+    driver: local
+
+networks:
+  leanda-ng-test-network:
+    driver: bridge
+    name: leanda-ng-test-network
+

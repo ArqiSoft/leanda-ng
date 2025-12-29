@@ -1,0 +1,1631 @@
+asyncapi: 2.6.0
+info:
+  title: Leanda Domain Events
+  version: 2.0.0
+  description: |
+    Domain events and commands for Leanda.io platform.
+    Extracted from legacy .NET MassTransit contracts for Kafka migration.
+  license:
+    name: MIT
+
+servers:
+  development:
+    url: localhost:9092
+    protocol: kafka
+    description: Development Kafka broker (Redpanda)
+  production:
+    url: ${KAFKA_BOOTSTRAP_SERVERS}
+    protocol: kafka
+    description: Production Kafka (MSK)
+
+defaultContentType: application/json
+
+channels:
+  # ============== USER COMMANDS ==============
+  leanda.users.commands:
+    description: User management commands
+    publish:
+      operationId: sendUserCommand
+      message:
+        oneOf:
+          - $ref: '#/components/messages/CreateUser'
+          - $ref: '#/components/messages/UpdateUser'
+
+  # ============== USER EVENTS ==============
+  leanda.users.events:
+    description: User domain events
+    subscribe:
+      operationId: receiveUserEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/UserCreated'
+          - $ref: '#/components/messages/UserUpdated'
+          - $ref: '#/components/messages/UserPersisted'
+
+  # ============== FOLDER COMMANDS ==============
+  leanda.folders.commands:
+    description: Folder management commands
+    publish:
+      operationId: sendFolderCommand
+      message:
+        oneOf:
+          - $ref: '#/components/messages/CreateFolder'
+          - $ref: '#/components/messages/RenameFolder'
+          - $ref: '#/components/messages/MoveFolder'
+          - $ref: '#/components/messages/DeleteFolder'
+          - $ref: '#/components/messages/GrantFolderAccess'
+
+  # ============== FOLDER EVENTS ==============
+  leanda.folders.events:
+    description: Folder domain events
+    subscribe:
+      operationId: receiveFolderEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/FolderCreated'
+          - $ref: '#/components/messages/FolderNameChanged'
+          - $ref: '#/components/messages/FolderMoved'
+          - $ref: '#/components/messages/FolderDeleted'
+          - $ref: '#/components/messages/FolderStatusChanged'
+          - $ref: '#/components/messages/FolderPermissionsChanged'
+          - $ref: '#/components/messages/FolderPersisted'
+
+  # ============== FILE COMMANDS ==============
+  leanda.files.commands:
+    description: File management commands
+    publish:
+      operationId: sendFileCommand
+      message:
+        oneOf:
+          - $ref: '#/components/messages/RenameFile'
+          - $ref: '#/components/messages/MoveFile'
+          - $ref: '#/components/messages/DeleteFile'
+          - $ref: '#/components/messages/ChangeFileStatus'
+          - $ref: '#/components/messages/AddFileImage'
+          - $ref: '#/components/messages/UpdateFileMetadata'
+          - $ref: '#/components/messages/GrantFileAccess'
+
+  # ============== FILE EVENTS ==============
+  leanda.files.events:
+    description: File domain events
+    subscribe:
+      operationId: receiveFileEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/FileCreated'
+          - $ref: '#/components/messages/FileNameChanged'
+          - $ref: '#/components/messages/FileMoved'
+          - $ref: '#/components/messages/FileDeleted'
+          - $ref: '#/components/messages/FileStatusChanged'
+          - $ref: '#/components/messages/FileImageAdded'
+          - $ref: '#/components/messages/FileMetadataUpdated'
+          - $ref: '#/components/messages/FileBlobUpdated'
+          - $ref: '#/components/messages/FilePermissionsChanged'
+          - $ref: '#/components/messages/FilePersisted'
+          - $ref: '#/components/messages/FileProcessed'
+
+  # ============== RECORD COMMANDS ==============
+  leanda.records.commands:
+    description: Record management commands
+    publish:
+      operationId: sendRecordCommand
+      message:
+        oneOf:
+          - $ref: '#/components/messages/UpdateRecordFields'
+          - $ref: '#/components/messages/SetRecordAccessPermissions'
+
+  # ============== RECORD EVENTS ==============
+  leanda.records.events:
+    description: Record domain events
+    subscribe:
+      operationId: receiveRecordEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/RecordCreated'
+          - $ref: '#/components/messages/RecordParsed'
+          - $ref: '#/components/messages/RecordFieldsUpdated'
+          - $ref: '#/components/messages/RecordPersisted'
+
+  # ============== MACHINE LEARNING COMMANDS ==============
+  leanda.ml.commands:
+    description: Machine learning commands
+    publish:
+      operationId: sendMLCommand
+      message:
+        oneOf:
+          - $ref: '#/components/messages/StartTraining'
+          - $ref: '#/components/messages/CreatePrediction'
+          - $ref: '#/components/messages/PredictStructure'
+          - $ref: '#/components/messages/CalculateFeatureVectors'
+          - $ref: '#/components/messages/SetModelTargets'
+          - $ref: '#/components/messages/SetConsensusWeight'
+          - $ref: '#/components/messages/MoveModel'
+          - $ref: '#/components/messages/UpdateModelName'
+          - $ref: '#/components/messages/GrantModelAccess'
+
+  # ============== MACHINE LEARNING EVENTS ==============
+  leanda.ml.events:
+    description: Machine learning events
+    subscribe:
+      operationId: receiveMLEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/TrainingStarted'
+          - $ref: '#/components/messages/TrainingCompleted'
+          - $ref: '#/components/messages/TrainingFailed'
+          - $ref: '#/components/messages/ModelCreated'
+          - $ref: '#/components/messages/ModelTrained'
+          - $ref: '#/components/messages/PredictionCreated'
+          - $ref: '#/components/messages/PredictionCompleted'
+          - $ref: '#/components/messages/FeatureVectorsCalculated'
+
+  # ============== EXPORT COMMANDS ==============
+  leanda.exports.commands:
+    description: Export commands
+    publish:
+      operationId: sendExportCommand
+      message:
+        oneOf:
+          - $ref: '#/components/messages/ExportFile'
+
+  # ============== EXPORT EVENTS ==============
+  leanda.exports.events:
+    description: Export events
+    subscribe:
+      operationId: receiveExportEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/FileExported'
+          - $ref: '#/components/messages/ExportFailed'
+
+  # ============== PROCESSING EVENTS ==============
+  leanda.processing.events:
+    description: Generic processing events
+    subscribe:
+      operationId: receiveProcessingEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/ProcessingStarted'
+          - $ref: '#/components/messages/ProcessingFinished'
+          - $ref: '#/components/messages/ProcessingFailed'
+          - $ref: '#/components/messages/ProcessingProgressChanged'
+
+  # ============== NOTIFICATION EVENTS ==============
+  leanda.notifications.events:
+    description: User notification events
+    subscribe:
+      operationId: receiveNotificationEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/UserNotificationCreated'
+          - $ref: '#/components/messages/UserNotificationDeleted'
+          - $ref: '#/components/messages/UserNotificationMarkedAsRead'
+
+components:
+  messages:
+    # ============== USER MESSAGES ==============
+    CreateUser:
+      name: CreateUser
+      title: Create User Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CreateUserPayload'
+
+    UpdateUser:
+      name: UpdateUser
+      title: Update User Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UpdateUserPayload'
+
+    UserCreated:
+      name: UserCreated
+      title: User Created Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserCreatedPayload'
+
+    UserUpdated:
+      name: UserUpdated
+      title: User Updated Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserUpdatedPayload'
+
+    UserPersisted:
+      name: UserPersisted
+      title: User Persisted Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UserPersistedPayload'
+
+    # ============== FOLDER MESSAGES ==============
+    CreateFolder:
+      name: CreateFolder
+      title: Create Folder Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CreateFolderPayload'
+
+    RenameFolder:
+      name: RenameFolder
+      title: Rename Folder Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RenameFolderPayload'
+
+    MoveFolder:
+      name: MoveFolder
+      title: Move Folder Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MoveFolderPayload'
+
+    DeleteFolder:
+      name: DeleteFolder
+      title: Delete Folder Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/DeleteFolderPayload'
+
+    GrantFolderAccess:
+      name: GrantFolderAccess
+      title: Grant Folder Access Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/GrantAccessPayload'
+
+    FolderCreated:
+      name: FolderCreated
+      title: Folder Created Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FolderCreatedPayload'
+
+    FolderNameChanged:
+      name: FolderNameChanged
+      title: Folder Name Changed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/NameChangedPayload'
+
+    FolderMoved:
+      name: FolderMoved
+      title: Folder Moved Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MovedPayload'
+
+    FolderDeleted:
+      name: FolderDeleted
+      title: Folder Deleted Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/DeletedPayload'
+
+    FolderStatusChanged:
+      name: FolderStatusChanged
+      title: Folder Status Changed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/StatusChangedPayload'
+
+    FolderPermissionsChanged:
+      name: FolderPermissionsChanged
+      title: Folder Permissions Changed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/PermissionsChangedPayload'
+
+    FolderPersisted:
+      name: FolderPersisted
+      title: Folder Persisted Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FolderPersistedPayload'
+
+    # ============== FILE MESSAGES ==============
+    RenameFile:
+      name: RenameFile
+      title: Rename File Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RenameFilePayload'
+
+    MoveFile:
+      name: MoveFile
+      title: Move File Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MoveFilePayload'
+
+    DeleteFile:
+      name: DeleteFile
+      title: Delete File Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/DeleteFilePayload'
+
+    ChangeFileStatus:
+      name: ChangeFileStatus
+      title: Change File Status Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ChangeStatusPayload'
+
+    AddFileImage:
+      name: AddFileImage
+      title: Add File Image Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/AddImagePayload'
+
+    UpdateFileMetadata:
+      name: UpdateFileMetadata
+      title: Update File Metadata Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UpdateMetadataPayload'
+
+    GrantFileAccess:
+      name: GrantFileAccess
+      title: Grant File Access Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/GrantAccessPayload'
+
+    FileCreated:
+      name: FileCreated
+      title: File Created Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileCreatedPayload'
+
+    FileNameChanged:
+      name: FileNameChanged
+      title: File Name Changed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/NameChangedPayload'
+
+    FileMoved:
+      name: FileMoved
+      title: File Moved Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MovedPayload'
+
+    FileDeleted:
+      name: FileDeleted
+      title: File Deleted Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileDeletedPayload'
+
+    FileStatusChanged:
+      name: FileStatusChanged
+      title: File Status Changed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/StatusChangedPayload'
+
+    FileImageAdded:
+      name: FileImageAdded
+      title: File Image Added Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ImageAddedPayload'
+
+    FileMetadataUpdated:
+      name: FileMetadataUpdated
+      title: File Metadata Updated Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MetadataUpdatedPayload'
+
+    FileBlobUpdated:
+      name: FileBlobUpdated
+      title: File Blob Updated Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/BlobUpdatedPayload'
+
+    FilePermissionsChanged:
+      name: FilePermissionsChanged
+      title: File Permissions Changed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/PermissionsChangedPayload'
+
+    FilePersisted:
+      name: FilePersisted
+      title: File Persisted Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FilePersistedPayload'
+
+    FileProcessed:
+      name: FileProcessed
+      title: File Processed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileProcessedPayload'
+
+    # ============== RECORD MESSAGES ==============
+    UpdateRecordFields:
+      name: UpdateRecordFields
+      title: Update Record Fields Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UpdateFieldsPayload'
+
+    SetRecordAccessPermissions:
+      name: SetRecordAccessPermissions
+      title: Set Record Access Permissions Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/GrantAccessPayload'
+
+    RecordCreated:
+      name: RecordCreated
+      title: Record Created Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordCreatedPayload'
+
+    RecordParsed:
+      name: RecordParsed
+      title: Record Parsed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordParsedPayload'
+
+    RecordFieldsUpdated:
+      name: RecordFieldsUpdated
+      title: Record Fields Updated Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FieldsUpdatedPayload'
+
+    RecordPersisted:
+      name: RecordPersisted
+      title: Record Persisted Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordPersistedPayload'
+
+    # ============== ML MESSAGES ==============
+    StartTraining:
+      name: StartTraining
+      title: Start Training Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/StartTrainingPayload'
+
+    CreatePrediction:
+      name: CreatePrediction
+      title: Create Prediction Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CreatePredictionPayload'
+
+    PredictStructure:
+      name: PredictStructure
+      title: Predict Structure Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/PredictStructurePayload'
+
+    CalculateFeatureVectors:
+      name: CalculateFeatureVectors
+      title: Calculate Feature Vectors Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/CalculateFeaturesPayload'
+
+    SetModelTargets:
+      name: SetModelTargets
+      title: Set Model Targets Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/SetTargetsPayload'
+
+    SetConsensusWeight:
+      name: SetConsensusWeight
+      title: Set Consensus Weight Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/SetConsensusWeightPayload'
+
+    MoveModel:
+      name: MoveModel
+      title: Move Model Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MoveModelPayload'
+
+    UpdateModelName:
+      name: UpdateModelName
+      title: Update Model Name Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/UpdateModelNamePayload'
+
+    GrantModelAccess:
+      name: GrantModelAccess
+      title: Grant Model Access Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/GrantAccessPayload'
+
+    TrainingStarted:
+      name: TrainingStarted
+      title: Training Started Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/TrainingStartedPayload'
+
+    TrainingCompleted:
+      name: TrainingCompleted
+      title: Training Completed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/TrainingCompletedPayload'
+
+    TrainingFailed:
+      name: TrainingFailed
+      title: Training Failed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/TrainingFailedPayload'
+
+    ModelCreated:
+      name: ModelCreated
+      title: Model Created Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ModelCreatedPayload'
+
+    ModelTrained:
+      name: ModelTrained
+      title: Model Trained Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ModelTrainedPayload'
+
+    PredictionCreated:
+      name: PredictionCreated
+      title: Prediction Created Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/PredictionCreatedPayload'
+
+    PredictionCompleted:
+      name: PredictionCompleted
+      title: Prediction Completed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/PredictionCompletedPayload'
+
+    FeatureVectorsCalculated:
+      name: FeatureVectorsCalculated
+      title: Feature Vectors Calculated Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FeaturesCalculatedPayload'
+
+    # ============== EXPORT MESSAGES ==============
+    ExportFile:
+      name: ExportFile
+      title: Export File Command
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ExportFilePayload'
+
+    FileExported:
+      name: FileExported
+      title: File Exported Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileExportedPayload'
+
+    ExportFailed:
+      name: ExportFailed
+      title: Export Failed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ExportFailedPayload'
+
+    # ============== PROCESSING MESSAGES ==============
+    ProcessingStarted:
+      name: ProcessingStarted
+      title: Processing Started Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProcessingStartedPayload'
+
+    ProcessingFinished:
+      name: ProcessingFinished
+      title: Processing Finished Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProcessingFinishedPayload'
+
+    ProcessingFailed:
+      name: ProcessingFailed
+      title: Processing Failed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProcessingFailedPayload'
+
+    ProcessingProgressChanged:
+      name: ProcessingProgressChanged
+      title: Processing Progress Changed Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProgressChangedPayload'
+
+    # ============== NOTIFICATION MESSAGES ==============
+    UserNotificationCreated:
+      name: UserNotificationCreated
+      title: User Notification Created Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/NotificationCreatedPayload'
+
+    UserNotificationDeleted:
+      name: UserNotificationDeleted
+      title: User Notification Deleted Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/NotificationDeletedPayload'
+
+    UserNotificationMarkedAsRead:
+      name: UserNotificationMarkedAsRead
+      title: User Notification Marked As Read Event
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/NotificationMarkedAsReadPayload'
+
+  schemas:
+    # ============== COMMON SCHEMAS ==============
+    BaseEvent:
+      type: object
+      required:
+        - id
+        - userId
+        - timestamp
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Aggregate ID
+        userId:
+          type: string
+          format: uuid
+          description: User who triggered the event
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        version:
+          type: integer
+          description: Aggregate version
+
+    BaseCommand:
+      type: object
+      required:
+        - id
+        - userId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Target aggregate ID
+        userId:
+          type: string
+          format: uuid
+          description: User executing the command
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID for tracking
+        expectedVersion:
+          type: integer
+          description: Expected aggregate version for optimistic concurrency
+
+    AccessPermissions:
+      type: object
+      properties:
+        isPublic:
+          type: boolean
+        users:
+          type: array
+          items:
+            type: string
+            format: uuid
+        groups:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    Image:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bucket:
+          type: string
+        height:
+          type: integer
+        width:
+          type: integer
+        mimeType:
+          type: string
+        scale:
+          type: string
+
+    Blob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bucket:
+          type: string
+
+    KeyValue:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+
+    Fingerprint:
+      type: object
+      properties:
+        type:
+          type: string
+        size:
+          type: integer
+        radius:
+          type: integer
+
+    # ============== USER SCHEMAS ==============
+    CreateUserPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - displayName
+          properties:
+            displayName:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            loginName:
+              type: string
+            email:
+              type: string
+              format: email
+            avatar:
+              type: string
+
+    UpdateUserPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          properties:
+            newDisplayName:
+              type: string
+            newFirstName:
+              type: string
+            newLastName:
+              type: string
+            loginName:
+              type: string
+            newEmail:
+              type: string
+              format: email
+            newAvatar:
+              type: string
+
+    UserCreatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            displayName:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            loginName:
+              type: string
+            email:
+              type: string
+            avatar:
+              type: string
+
+    UserUpdatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            displayName:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            email:
+              type: string
+            avatar:
+              type: string
+
+    UserPersistedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+
+    # ============== FOLDER SCHEMAS ==============
+    CreateFolderPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - name
+          properties:
+            parentId:
+              type: string
+              format: uuid
+            name:
+              type: string
+            sessionId:
+              type: string
+              format: uuid
+
+    RenameFolderPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - newName
+          properties:
+            newName:
+              type: string
+
+    MoveFolderPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - newParentId
+          properties:
+            newParentId:
+              type: string
+              format: uuid
+
+    DeleteFolderPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          properties:
+            force:
+              type: boolean
+              default: false
+
+    FolderCreatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            parentId:
+              type: string
+              format: uuid
+            name:
+              type: string
+            status:
+              type: string
+              enum: [Created, Processing, Processed, Failed]
+            sessionId:
+              type: string
+              format: uuid
+
+    FolderPersistedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            parentId:
+              type: string
+              format: uuid
+            name:
+              type: string
+            status:
+              type: string
+
+    # ============== FILE SCHEMAS ==============
+    RenameFilePayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - newName
+          properties:
+            newName:
+              type: string
+
+    MoveFilePayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - newParentId
+          properties:
+            newParentId:
+              type: string
+              format: uuid
+
+    DeleteFilePayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          properties:
+            force:
+              type: boolean
+              default: false
+
+    ChangeStatusPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - status
+          properties:
+            status:
+              type: string
+              enum: [Loading, Loaded, Parsing, Parsed, Processing, Processed, ProcessedPartially, Failed]
+
+    AddImagePayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - image
+          properties:
+            image:
+              $ref: '#/components/schemas/Image'
+
+    UpdateMetadataPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - metadata
+          properties:
+            metadata:
+              type: array
+              items:
+                $ref: '#/components/schemas/KeyValue'
+
+    GrantAccessPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - permissions
+          properties:
+            permissions:
+              $ref: '#/components/schemas/AccessPermissions'
+
+    FileCreatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            bucket:
+              type: string
+            blobId:
+              type: string
+              format: uuid
+            parentId:
+              type: string
+              format: uuid
+            fileName:
+              type: string
+            length:
+              type: integer
+              format: int64
+            md5:
+              type: string
+            fileStatus:
+              type: string
+              enum: [Loading, Loaded, Parsing, Parsed, Processing, Processed, ProcessedPartially, Failed]
+            fileType:
+              type: string
+              enum: [Generic, Office, Model, Records, Tabular, Pdf, WebPage, Image, Microscopy]
+
+    NameChangedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            oldName:
+              type: string
+            newName:
+              type: string
+
+    MovedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            oldParentId:
+              type: string
+              format: uuid
+            newParentId:
+              type: string
+              format: uuid
+
+    DeletedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            force:
+              type: boolean
+
+    FileDeletedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            fileType:
+              type: string
+            force:
+              type: boolean
+
+    StatusChangedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            status:
+              type: string
+
+    ImageAddedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            image:
+              $ref: '#/components/schemas/Image'
+
+    MetadataUpdatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            metadata:
+              type: array
+              items:
+                $ref: '#/components/schemas/KeyValue'
+
+    BlobUpdatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            bucket:
+              type: string
+            blobId:
+              type: string
+              format: uuid
+            fileName:
+              type: string
+            length:
+              type: integer
+              format: int64
+            md5:
+              type: string
+
+    PermissionsChangedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            accessPermissions:
+              $ref: '#/components/schemas/AccessPermissions'
+
+    FilePersistedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            bucket:
+              type: string
+            blobId:
+              type: string
+              format: uuid
+            parentId:
+              type: string
+              format: uuid
+            fileName:
+              type: string
+            length:
+              type: integer
+              format: int64
+            md5:
+              type: string
+            status:
+              type: string
+            fileType:
+              type: string
+
+    FileProcessedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            blobId:
+              type: string
+              format: uuid
+            bucket:
+              type: string
+            totalRecords:
+              type: integer
+            status:
+              type: string
+
+    # ============== RECORD SCHEMAS ==============
+    UpdateFieldsPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - fields
+          properties:
+            fields:
+              type: array
+              items:
+                type: object
+
+    RecordCreatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            fileId:
+              type: string
+              format: uuid
+            bucket:
+              type: string
+            blobId:
+              type: string
+              format: uuid
+            index:
+              type: integer
+            type:
+              type: string
+
+    RecordParsedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            fileId:
+              type: string
+              format: uuid
+            index:
+              type: integer
+            fields:
+              type: array
+              items:
+                type: object
+
+    FieldsUpdatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            fields:
+              type: array
+              items:
+                type: object
+
+    RecordPersistedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            fileId:
+              type: string
+              format: uuid
+            index:
+              type: integer
+
+    # ============== ML SCHEMAS ==============
+    StartTrainingPayload:
+      type: object
+      required:
+        - id
+        - parentId
+        - sourceBlobId
+        - sourceBucket
+        - userId
+        - methods
+        - className
+      properties:
+        id:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+        sourceBlobId:
+          type: string
+          format: uuid
+        sourceBucket:
+          type: string
+        correlationId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        sourceFileName:
+          type: string
+        scaler:
+          type: string
+        methods:
+          type: array
+          items:
+            type: string
+        className:
+          type: string
+        subSampleSize:
+          type: number
+        testDataSize:
+          type: number
+        kFold:
+          type: integer
+        fingerprints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fingerprint'
+        optimize:
+          type: boolean
+        hyperParameters:
+          type: object
+        dnnLayers:
+          type: integer
+        dnnNeurons:
+          type: integer
+
+    CreatePredictionPayload:
+      type: object
+      required:
+        - id
+        - folderId
+        - datasetBlobId
+        - datasetBucket
+        - modelBlobId
+        - modelBucket
+        - userId
+      properties:
+        id:
+          type: string
+          format: uuid
+        correlationId:
+          type: string
+          format: uuid
+        folderId:
+          type: string
+          format: uuid
+        datasetBlobId:
+          type: string
+          format: uuid
+        datasetBucket:
+          type: string
+        modelBlobId:
+          type: string
+          format: uuid
+        modelBucket:
+          type: string
+        userId:
+          type: string
+          format: uuid
+
+    PredictStructurePayload:
+      type: object
+      required:
+        - id
+        - structure
+        - format
+        - propertyName
+        - models
+      properties:
+        id:
+          type: string
+          format: uuid
+        correlationId:
+          type: string
+          format: uuid
+        structure:
+          type: string
+        format:
+          type: string
+          enum: [MOL, SMILES]
+        propertyName:
+          type: string
+        models:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              blob:
+                $ref: '#/components/schemas/Blob'
+
+    CalculateFeaturesPayload:
+      type: object
+      required:
+        - correlationId
+        - fingerprints
+        - fileType
+      properties:
+        correlationId:
+          type: string
+          format: uuid
+        fingerprints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fingerprint'
+        fileType:
+          type: string
+
+    SetTargetsPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - targets
+          properties:
+            targets:
+              type: array
+              items:
+                type: string
+
+    SetConsensusWeightPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - consensusWeight
+          properties:
+            consensusWeight:
+              type: number
+
+    MoveModelPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - newParentId
+          properties:
+            newParentId:
+              type: string
+              format: uuid
+
+    UpdateModelNamePayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseCommand'
+        - type: object
+          required:
+            - modelName
+          properties:
+            modelName:
+              type: string
+
+    TrainingStartedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            correlationId:
+              type: string
+              format: uuid
+
+    TrainingCompletedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            correlationId:
+              type: string
+              format: uuid
+
+    TrainingFailedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            correlationId:
+              type: string
+              format: uuid
+            message:
+              type: string
+
+    ModelCreatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            parentId:
+              type: string
+              format: uuid
+            blobId:
+              type: string
+              format: uuid
+            bucket:
+              type: string
+
+    ModelTrainedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+
+    PredictionCreatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            correlationId:
+              type: string
+              format: uuid
+
+    PredictionCompletedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            correlationId:
+              type: string
+              format: uuid
+            result:
+              type: object
+
+    FeaturesCalculatedPayload:
+      type: object
+      properties:
+        correlationId:
+          type: string
+          format: uuid
+        status:
+          type: string
+
+    # ============== EXPORT SCHEMAS ==============
+    ExportFilePayload:
+      type: object
+      required:
+        - id
+        - blobId
+        - bucket
+        - format
+        - properties
+        - userId
+      properties:
+        id:
+          type: string
+          format: uuid
+        blobId:
+          type: string
+          format: uuid
+        bucket:
+          type: string
+        format:
+          type: string
+        properties:
+          type: array
+          items:
+            type: string
+        map:
+          type: object
+          additionalProperties:
+            type: string
+        userId:
+          type: string
+          format: uuid
+
+    FileExportedPayload:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bucket:
+          type: string
+        blobId:
+          type: string
+          format: uuid
+
+    ExportFailedPayload:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        message:
+          type: string
+
+    # ============== PROCESSING SCHEMAS ==============
+    ProcessingStartedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            correlationId:
+              type: string
+              format: uuid
+
+    ProcessingFinishedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            correlationId:
+              type: string
+              format: uuid
+
+    ProcessingFailedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            correlationId:
+              type: string
+              format: uuid
+            message:
+              type: string
+
+    ProgressChangedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            processed:
+              type: integer
+            total:
+              type: integer
+            failed:
+              type: integer
+
+    # ============== NOTIFICATION SCHEMAS ==============
+    NotificationCreatedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+        - type: object
+          properties:
+            title:
+              type: string
+            message:
+              type: string
+            type:
+              type: string
+
+    NotificationDeletedPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+
+    NotificationMarkedAsReadPayload:
+      allOf:
+        - $ref: '#/components/schemas/BaseEvent'
+

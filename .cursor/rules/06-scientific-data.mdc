@@ -1,0 +1,55 @@
+---
+description: Scientific data handling & domain-specific rules
+globs: ["**/*"]
+alwaysApply: false
+---
+
+When working with scientific data:
+- Chemical structures → prefer RDKit (Python) or CDK (Java)
+- Use standardized formats (InChI, SMILES, CML) when possible
+- Always preserve original data + create derived/curated versions
+- Metadata must include provenance, timestamp, user/automation source
+- Ontology usage: prefer OBO Foundry ontologies + exact CURIE identifiers
+- Never hardcode scientific constants — use libraries (astropy, pint, etc.)
+
+## FAIR Principles
+- **Findable**: Use persistent identifiers (DOIs, UUIDs), rich metadata, searchable catalogs
+- **Accessible**: Use standard protocols (HTTPS, APIs), authentication/authorization, metadata persistence
+- **Interoperable**: Use standard formats (InChI, SMILES, CML), vocabularies (OBO Foundry), qualified references
+- **Reusable**: Include clear licenses, detailed provenance, domain-relevant community standards
+
+## Data Validation
+- Validate scientific data formats (SDF, MOL, CIF, JDX) with format-specific parsers
+- Verify data integrity with checksums (SHA-256) before and after processing
+- Validate chemical structures (SMILES, InChI) for syntax and chemical validity
+- Check data completeness (required fields, non-null constraints)
+- Validate numerical ranges and units (use pint for unit validation)
+
+## Data Provenance
+- Record data lineage: source system, ingestion timestamp, transformation steps
+- Include user/automation source in all metadata
+- Track data modifications (who, when, why)
+- Preserve original data files alongside processed versions
+- Document data quality assessments and validation results
+
+## Citation and DOI Handling
+- Support DOI (Digital Object Identifier) assignment for published datasets
+- Include citation information in dataset metadata
+- Link datasets to publications and research papers
+- Support citation export (BibTeX, RIS, JSON-LD)
+- Track citation counts and usage statistics
+
+## Large File Handling
+- Use S3 multipart upload for files > 5MB
+- Implement streaming for large file processing (don't load entire file in memory)
+- Use S3 Select for querying large files without full download
+- Compress large files (gzip, bzip2) before storage when appropriate
+- Monitor file sizes and alert on unusually large uploads
+
+## Reproducibility
+- Version all datasets and models (use semantic versioning)
+- Document experiment parameters and configurations
+- Store experiment artifacts (notebooks, scripts, results) with datasets
+- Use SageMaker Experiments for ML experiment tracking
+- Include random seed values for reproducible results
+- Document software versions and dependencies (requirements.txt, pom.xml)

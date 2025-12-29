@@ -1,0 +1,14 @@
+---
+description: Python standards for SageMaker, Glue, data pipelines
+globs: ["**/*.py"]
+---
+
+Python coding standards for Leanda.io:
+- Python 3.12+, use uv or rye for dependency management
+- Strict typing: always use type hints + Pydantic v2 for models
+- Prefer Polars over pandas when working with large scientific datasets
+- Use boto3.session when needed, but prefer high-level SDKs (SageMaker SDK, awswrangler)
+- Structure: domain-driven (src/domain_name/services/, tests/, features/)
+- Testing: pytest + pytest-asyncio + moto for AWS mocking
+- Logging: structured logging with structlog
+- Always handle pagination & retries with tenacity

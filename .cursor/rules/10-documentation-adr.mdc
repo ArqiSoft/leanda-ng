@@ -1,0 +1,92 @@
+---
+description: Documentation and Architecture Decision Records (ADRs)
+globs: ["**/*"]
+alwaysApply: true
+---
+
+Documentation and ADR standards for Leanda.io:
+
+## Architecture Decision Records (ADRs)
+- Create an ADR for ANY significant architectural decision:
+  - New service or bounded context
+  - Database or storage technology choice
+  - API design pattern or protocol choice
+  - Integration with external systems
+  - Major refactoring or pattern adoption
+  - Technology stack changes
+
+## ADR Format
+Follow this standard ADR format:
+```markdown
+# NNNN. Title of Decision
+
+## Status
+[Proposed | Accepted | Deprecated | Superseded]
+
+## Context
+[Describe the issue motivating this decision]
+
+## Decision
+[State the architectural decision]
+
+## Consequences
+[Describe the positive and negative consequences]
+
+## Alternatives Considered
+[Optional: List alternatives that were considered]
+```
+
+## ADR Storage
+- Store ADRs in `/docs/adr/` directory
+- Use sequential numbering: `0001-use-apache-iceberg.md`, `0002-use-quarkus-for-backend.md`
+- Use descriptive, kebab-case filenames
+- Update ADR status when decisions change (mark as Deprecated or Superseded)
+
+## API Documentation
+- Require OpenAPI 3.1 specifications for ALL REST APIs
+- Generate API documentation from OpenAPI specs (Swagger UI, ReDoc)
+- Document all request/response schemas, error codes, and examples
+- Include authentication requirements and rate limits
+- Version APIs explicitly (URL path: `/api/v1/`, `/api/v2/`)
+
+## Code Documentation
+- Write self-documenting code (clear names, small functions, single responsibility)
+- Add JSDoc/Pydoc/docstrings for all public APIs and complex logic
+- Document function parameters, return values, exceptions, and side effects
+- Include usage examples in docstrings for complex functions
+- Keep comments up-to-date (delete outdated comments)
+
+## README Files
+- Every service/module must have a README.md with:
+  - Purpose and responsibility
+  - Setup and installation instructions
+  - Configuration requirements
+  - How to run tests
+  - How to run locally
+  - API endpoints (if applicable)
+- Update README when public APIs change
+- Include architecture diagrams for complex systems (use Mermaid or PlantUML)
+
+## Data Lineage Documentation
+- Document data lineage for all Iceberg tables:
+  - Source systems and ingestion methods
+  - Transformation steps and business logic
+  - Data quality checks and validation rules
+  - Downstream consumers and use cases
+- Use AWS Glue Data Catalog for technical metadata
+- Maintain business glossary for domain terms
+
+## Runbooks and Operations
+- Create runbooks for common operational tasks:
+  - Deployment procedures
+  - Rollback procedures
+  - Incident response
+  - Data migration steps
+- Document known issues and workarounds
+- Include troubleshooting steps and common errors
+
+## Scientific Data Documentation
+- Document data formats, schemas, and validation rules
+- Include provenance information (source, timestamp, processing steps)
+- Document ontology mappings and semantic annotations
+- Provide examples of data transformations and expected outputs

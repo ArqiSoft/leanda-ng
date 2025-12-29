@@ -1,0 +1,294 @@
+asyncapi: 3.0.0
+info:
+  title: Crystal Parser Service Events
+  version: 1.0.0
+  description: |
+    Event contracts for Crystal File Parser service.
+    Handles CIF (Crystallographic Information File) parsing.
+
+servers:
+  kafka:
+    host: localhost:9092
+    protocol: kafka
+    description: Kafka broker for event streaming
+
+channels:
+  crystal-parse-commands:
+    address: crystal-parse-commands
+    description: Commands for parsing crystal files
+    messages:
+      ParseFileCommand:
+        $ref: '#/components/messages/ParseFileCommand'
+
+  crystal-parser-events:
+    address: crystal-parser-events
+    description: Events published by crystal parser
+    messages:
+      FileParsedEvent:
+        $ref: '#/components/messages/FileParsedEvent'
+      RecordParsedEvent:
+        $ref: '#/components/messages/RecordParsedEvent'
+      FileParseFailedEvent:
+        $ref: '#/components/messages/FileParseFailedEvent'
+      RecordParseFailedEvent:
+        $ref: '#/components/messages/RecordParseFailedEvent'
+
+operations:
+  parseFile:
+    action: receive
+    channel:
+      $ref: '#/channels/crystal-parse-commands'
+    title: Receive ParseFile command
+    description: Consumes ParseFile commands from Kafka
+
+  publishFileParsed:
+    action: send
+    channel:
+      $ref: '#/channels/crystal-parser-events'
+    title: Publish FileParsed event
+    description: Publishes FileParsed event when file parsing completes
+
+  publishRecordParsed:
+    action: send
+    channel:
+      $ref: '#/channels/crystal-parser-events'
+    title: Publish RecordParsed event
+    description: Publishes RecordParsed event for each parsed crystal record
+
+components:
+  messages:
+    ParseFileCommand:
+      name: ParseFileCommand
+      title: Parse File Command
+      summary: Command to parse a CIF file
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ParseFileCommand'
+
+    FileParsedEvent:
+      name: FileParsedEvent
+      title: File Parsed Event
+      summary: Event published when file parsing completes
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileParsedEvent'
+
+    RecordParsedEvent:
+      name: RecordParsedEvent
+      title: Record Parsed Event
+      summary: Event published for each parsed crystal record
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordParsedEvent'
+
+    FileParseFailedEvent:
+      name: FileParseFailedEvent
+      title: File Parse Failed Event
+      summary: Event published when file parsing fails
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileParseFailedEvent'
+
+    RecordParseFailedEvent:
+      name: RecordParseFailedEvent
+      title: Record Parse Failed Event
+      summary: Event published when a record parsing fails
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordParseFailedEvent'
+
+  schemas:
+    ParseFileCommand:
+      type: object
+      required:
+        - id
+        - blobId
+        - bucket
+        - userId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File ID
+        blobId:
+          type: string
+          format: uuid
+          description: Blob storage ID of the CIF file
+        bucket:
+          type: string
+          description: Storage bucket name
+        userId:
+          type: string
+          format: uuid
+          description: User ID who initiated the parse
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID for request tracking
+
+    FileParsedEvent:
+      type: object
+      required:
+        - id
+        - userId
+        - totalRecords
+        - parsedRecords
+        - failedRecords
+        - fields
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File ID
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+        timeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        totalRecords:
+          type: integer
+          description: Total number of records in file
+        parsedRecords:
+          type: integer
+          description: Number of successfully parsed records
+        failedRecords:
+          type: integer
+          description: Number of failed records
+        fields:
+          type: array
+          items:
+            type: string
+          description: List of unique field names found in parsed records
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID from original command
+
+    RecordParsedEvent:
+      type: object
+      required:
+        - id
+        - fileId
+        - blobId
+        - bucket
+        - index
+        - fields
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Record ID
+        fileId:
+          type: string
+          format: uuid
+          description: Parent file ID
+        blobId:
+          type: string
+          format: uuid
+          description: Blob storage ID of parsed record
+        bucket:
+          type: string
+          description: Storage bucket name
+        index:
+          type: integer
+          description: Record index in file (0-based)
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/Field'
+          description: Extracted fields/properties from record
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+        timeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID from original command
+
+    FileParseFailedEvent:
+      type: object
+      required:
+        - id
+        - userId
+        - message
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File ID
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+        timeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        totalRecords:
+          type: integer
+          description: Total number of records processed before failure
+        parsedRecords:
+          type: integer
+          description: Number of successfully parsed records before failure
+        failedRecords:
+          type: integer
+          description: Number of failed records
+        message:
+          type: string
+          description: Error message
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID from original command
+
+    RecordParseFailedEvent:
+      type: object
+      required:
+        - fileId
+        - index
+        - message
+      properties:
+        fileId:
+          type: string
+          format: uuid
+          description: Parent file ID
+        index:
+          type: integer
+          description: Record index that failed (0-based)
+        message:
+          type: string
+          description: Error message
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+        timeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID from original command
+
+    Field:
+      type: object
+      required:
+        - name
+        - value
+      properties:
+        name:
+          type: string
+          description: Field name (e.g., ChemicalFormula, Alpha, Beta, Gamma)
+        value:
+          type: string
+          description: Field value
+

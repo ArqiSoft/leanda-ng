@@ -1,0 +1,130 @@
+# Prometheus configuration for Phase 2 services
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'leanda-ng-phase2'
+    environment: 'development'
+
+# Alertmanager configuration (optional)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: []
+
+# Load rules once and periodically evaluate them
+rule_files:
+  # - "alert_rules.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Blob Storage Service
+  - job_name: 'blob-storage'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['blob-storage:8084']
+        labels:
+          service: 'blob-storage'
+          agent: 'agent3'
+
+  # Chemical Parser Service
+  - job_name: 'chemical-parser'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['chemical-parser:8083']
+        labels:
+          service: 'chemical-parser'
+          agent: 'agent1'
+
+  # Chemical Properties Service
+  - job_name: 'chemical-properties'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['chemical-properties:8086']
+        labels:
+          service: 'chemical-properties'
+          agent: 'agent1'
+
+  # Reaction Parser Service
+  - job_name: 'reaction-parser'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['reaction-parser:8087']
+        labels:
+          service: 'reaction-parser'
+          agent: 'agent1'
+
+  # Office Processor Service
+  - job_name: 'office-processor'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['office-processor:8080']
+        labels:
+          service: 'office-processor'
+          agent: 'agent3'
+
+  # Crystal Parser Service
+  - job_name: 'crystal-parser'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['crystal-parser:8080']
+        labels:
+          service: 'crystal-parser'
+          agent: 'agent2'
+
+  # Spectra Parser Service
+  - job_name: 'spectra-parser'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['spectra-parser:8080']
+        labels:
+          service: 'spectra-parser'
+          agent: 'agent2'
+
+  # Imaging Service
+  - job_name: 'imaging'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['imaging:8080']
+        labels:
+          service: 'imaging'
+          agent: 'agent2'
+
+  # Metadata Processing Service
+  - job_name: 'metadata-processing'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['metadata-processing:8088']
+        labels:
+          service: 'metadata-processing'
+          agent: 'agent4'
+
+  # Indexing Service
+  - job_name: 'indexing'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['indexing:8089']
+        labels:
+          service: 'indexing'
+          agent: 'agent4'
+
+  # OpenSearch (if metrics endpoint available)
+  # - job_name: 'opensearch'
+  #   static_configs:
+  #     - targets: ['opensearch:9200']
+
+  # MongoDB Exporter (if available)
+  # - job_name: 'mongodb'
+  #   static_configs:
+  #     - targets: ['mongodb-exporter:9216']
+
+  # Kafka/Redpanda Metrics (if available)
+  # - job_name: 'redpanda'
+  #   static_configs:
+  #     - targets: ['redpanda:9644']
+

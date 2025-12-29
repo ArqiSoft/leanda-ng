@@ -1,0 +1,94 @@
+---
+description: AWS CDK infrastructure as code best practices
+globs: ["**/*.cdk.ts", "**/cdk.json", "**/cdk.context.json"]
+alwaysApply: false
+---
+
+AWS CDK infrastructure as code standards for Leanda.io:
+
+## Structure and Organization
+- Organize stacks by bounded context (ingestion, curation, ml, api)
+  - Separate stacks for each domain service
+  - Use stack naming: `{Context}Stack` (e.g., `IngestionStack`, `CurationStack`)
+- Use CDK constructs for reusable patterns (prefer L2/L3 constructs over raw Cfn)
+  - Use AWS Solutions Constructs for common patterns
+  - Create custom constructs for project-specific patterns
+- Separate stateful (databases, S3) from stateless (Lambda, API) stacks
+  - Stateful stacks: RDS, DocumentDB, S3 buckets, DynamoDB tables
+  - Stateless stacks: Lambda functions, API Gateway, ECS services
+- Use `cdk.context.json` for environment-specific values (never commit to git)
+- Never hardcode account IDs or regions (use environment variables or context)
+
+## Security
+- Use CDK Nag for security and best practice validation:
+  - Run `cdk nag` before deploying
+  - Fix or suppress (with justification) all findings
+- Define IAM policies with Grant methods (grantRead, grantWrite, grantInvoke)
+  - Use least-privilege principle
+  - Avoid wildcard permissions
+- Use AWS Secrets Manager for all credentials (never hardcode)
+- Enable encryption by default (KMS) on all resources:
+  - S3 buckets: `encryption: s3.BucketEncryption.KMS`
+  - RDS/DocumentDB: `storageEncrypted: true`
+  - EBS volumes: `encrypted: true`
+- Use VPC endpoints for private AWS service access (reduce NAT Gateway costs)
+
+## Deployment
+- Use CDK Pipelines for CI/CD with self-mutation:
+  - Self-updating pipeline (pipeline updates itself)
+  - Automated deployments to multiple environments
+- Implement environment stages (dev, staging, prod):
+  - Use separate AWS accounts or environments
+  - Apply different configurations per environment
+- Use `cdk diff` before every deployment (review changes)
+- Tag all resources with CDK Tags aspect:
+  ```typescript
+  Tags.of(stack).add('Project', 'leanda');
+  Tags.of(stack).add('Environment', environment);
+  ```
+- Use RemovalPolicy.RETAIN for production data stores:
+  - Prevent accidental data loss
+  - Use DESTROY only for development environments
+
+## Testing
+- Write CDK assertions for critical infrastructure:
+  - Test resource creation and configuration
+  - Verify IAM policies and security settings
+- Use snapshot tests for drift detection:
+  - Compare synthesized templates over time
+  - Detect unintended changes
+- Validate synthesized templates with cfn-lint:
+  - Check CloudFormation template syntax
+  - Validate resource configurations
+- Test cross-stack references explicitly:
+  - Verify stack dependencies
+  - Test stack import/export
+- Use integ-tests for integration validation:
+  - Deploy to test account
+  - Verify infrastructure works end-to-end
+
+## Best Practices
+- Use CDK context for environment-specific values:
+  - VPC IDs, subnet IDs, security group IDs
+  - Environment names, account IDs
+- Use CDK parameters sparingly (prefer context or environment variables)
+- Document stack dependencies and deployment order
+- Use CDK Aspects for cross-cutting concerns:
+  - Tagging, encryption, monitoring
+- Version CDK apps and document breaking changes
+
+## Code Organization
+- Organize CDK code by stack (one file per stack or construct)
+- Use TypeScript for CDK code (strong typing, better IDE support)
+- Extract common patterns into reusable constructs
+- Use CDK patterns library for common architectures
+- Document stack purpose and dependencies in code comments
+
+## Cost Optimization
+- Use CDK to enforce cost optimization:
+  - Right-size resources (use context for configuration)
+  - Enable cost optimization features (S3 Intelligent-Tiering, etc.)
+  - Tag resources for cost allocation
+- Review and optimize CDK-generated resources:
+  - Use CDK Nag to identify cost optimization opportunities
+  - Review CloudFormation template before deployment

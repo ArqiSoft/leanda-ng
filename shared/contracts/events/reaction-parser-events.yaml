@@ -1,0 +1,311 @@
+asyncapi: '2.6.0'
+info:
+  title: Reaction File Parser Service Events
+  version: '1.0.0'
+  description: |
+    AsyncAPI specification for Reaction File Parser service.
+    Migrated from Java 8/Spring Boot to Java 21/Quarkus.
+    Replaces RabbitMQ with Kafka.
+    Similar structure to Chemical Parser but for reaction files (RDF, RXN, CDX).
+
+servers:
+  kafka:
+    url: localhost:9092
+    protocol: kafka
+    description: Kafka broker for reaction parser events
+
+channels:
+  reaction-parse-commands:
+    description: Commands to parse reaction files (RDF, RXN, CDX)
+    publish:
+      message:
+        $ref: '#/components/messages/ParseFileCommand'
+  
+  reaction-file-parsed:
+    description: Event published when a reaction file has been fully parsed
+    subscribe:
+      message:
+        $ref: '#/components/messages/FileParsedEvent'
+  
+  reaction-record-parsed:
+    description: Event published for each successfully parsed reaction record
+    subscribe:
+      message:
+        $ref: '#/components/messages/RecordParsedEvent'
+  
+  reaction-file-parse-failed:
+    description: Event published when file parsing fails
+    subscribe:
+      message:
+        $ref: '#/components/messages/FileParseFailedEvent'
+  
+  reaction-record-parse-failed:
+    description: Event published when a single reaction record parsing fails
+    subscribe:
+      message:
+        $ref: '#/components/messages/RecordParseFailedEvent'
+
+components:
+  messages:
+    ParseFileCommand:
+      name: ParseFileCommand
+      title: Parse File Command
+      summary: Command to parse a reaction file
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ParseFileCommand'
+    
+    FileParsedEvent:
+      name: FileParsedEvent
+      title: File Parsed Event
+      summary: Published when reaction file parsing completes successfully
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileParsedEvent'
+    
+    RecordParsedEvent:
+      name: RecordParsedEvent
+      title: Record Parsed Event
+      summary: Published for each successfully parsed reaction record
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordParsedEvent'
+    
+    FileParseFailedEvent:
+      name: FileParseFailedEvent
+      title: File Parse Failed Event
+      summary: Published when reaction file parsing fails
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileParseFailedEvent'
+    
+    RecordParseFailedEvent:
+      name: RecordParseFailedEvent
+      title: Record Parse Failed Event
+      summary: Published when a single reaction record parsing fails
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordParseFailedEvent'
+
+  schemas:
+    ParseFileCommand:
+      type: object
+      required:
+        - Id
+        - BlobId
+        - Bucket
+        - UserId
+        - CorrelationId
+      properties:
+        Id:
+          type: string
+          format: uuid
+          description: File ID
+        BlobId:
+          type: string
+          format: uuid
+          description: Blob storage ID
+        Bucket:
+          type: string
+          description: Storage bucket name
+        UserId:
+          type: string
+          format: uuid
+          description: User ID who initiated the parse
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID for saga orchestration
+    
+    FileParsedEvent:
+      type: object
+      required:
+        - Id
+        - ParsedRecords
+        - FailedRecords
+        - TotalRecords
+        - Fields
+        - CorrelationId
+        - UserId
+        - TimeStamp
+      properties:
+        Id:
+          type: string
+          format: uuid
+          description: File ID
+        ParsedRecords:
+          type: integer
+          format: int64
+          description: Number of successfully parsed records
+        FailedRecords:
+          type: integer
+          format: int64
+          description: Number of failed records
+        TotalRecords:
+          type: integer
+          format: int64
+          description: Total number of records in file
+        Fields:
+          type: array
+          items:
+            type: string
+          description: Unique field names found across all records
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID for saga orchestration
+        UserId:
+          type: string
+          format: uuid
+          description: User ID
+        TimeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+    
+    RecordParsedEvent:
+      type: object
+      required:
+        - Id
+        - FileId
+        - Index
+        - Fields
+        - BlobId
+        - Bucket
+        - CorrelationId
+        - UserId
+        - TimeStamp
+      properties:
+        Id:
+          type: string
+          format: uuid
+          description: Record ID
+        FileId:
+          type: string
+          format: uuid
+          description: Parent file ID
+        Index:
+          type: integer
+          format: int64
+          description: Record index in file (0-based)
+        Fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/Field'
+          description: Record properties/fields
+        BlobId:
+          type: string
+          format: uuid
+          description: Parsed record blob ID (RXN file)
+        Bucket:
+          type: string
+          description: Storage bucket name
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID for saga orchestration
+        UserId:
+          type: string
+          format: uuid
+          description: User ID
+        TimeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+    
+    FileParseFailedEvent:
+      type: object
+      required:
+        - Id
+        - ParsedRecords
+        - FailedRecords
+        - TotalRecords
+        - Message
+        - CorrelationId
+        - UserId
+        - TimeStamp
+      properties:
+        Id:
+          type: string
+          format: uuid
+          description: File ID
+        ParsedRecords:
+          type: integer
+          format: int64
+          description: Number of successfully parsed records before failure
+        FailedRecords:
+          type: integer
+          format: int64
+          description: Number of failed records
+        TotalRecords:
+          type: integer
+          format: int64
+          description: Total number of records processed
+        Message:
+          type: string
+          description: Error message
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID for saga orchestration
+        UserId:
+          type: string
+          format: uuid
+          description: User ID
+        TimeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+    
+    RecordParseFailedEvent:
+      type: object
+      required:
+        - Id
+        - FileId
+        - Index
+        - Message
+        - CorrelationId
+        - UserId
+        - TimeStamp
+      properties:
+        Id:
+          type: string
+          format: uuid
+          description: Record ID
+        FileId:
+          type: string
+          format: uuid
+          description: Parent file ID
+        Index:
+          type: integer
+          format: int64
+          description: Record index in file (0-based)
+        Message:
+          type: string
+          description: Error message
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID for saga orchestration
+        UserId:
+          type: string
+          format: uuid
+          description: User ID
+        TimeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+    
+    Field:
+      type: object
+      required:
+        - Name
+        - Value
+      properties:
+        Name:
+          type: string
+          description: Field name
+        Value:
+          type: string
+          description: Field value
+

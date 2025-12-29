@@ -1,0 +1,28 @@
+{
+  "name": "leanda-ng-infrastructure",
+  "version": "1.0.0",
+  "description": "AWS CDK infrastructure for Leanda NG",
+  "main": "bin/leanda-ng.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "deploy": "cdk deploy --all",
+    "diff": "cdk diff --all",
+    "synth": "cdk synth --all",
+    "bootstrap": "cdk bootstrap"
+  },
+  "keywords": ["aws", "cdk", "infrastructure", "leanda"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "aws-cdk-lib": "^2.233.0",
+    "constructs": "^10.4.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "source-map-support": "^0.5.21"
+  }
+}

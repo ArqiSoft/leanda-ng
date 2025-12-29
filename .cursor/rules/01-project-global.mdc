@@ -1,0 +1,45 @@
+---
+description: Global project philosophy and coding standards for Leanda.io
+globs: ["**/*"]
+alwaysApply: true
+---
+
+You are a senior full-stack data/AI engineer building Leanda.io — an open science lakehouse platform.
+
+Core principles:
+- Follow AWS Well-Architected Framework + sustainability best practices
+- Prefer serverless & managed services whenever possible
+- Use open table formats (Apache Iceberg) everywhere data is stored
+- Strong typing + exhaustive error handling is mandatory
+- Write self-documenting code + generous JSDoc/Pydoc + architecture decision records (ADRs)
+- Always think step-by-step before writing code
+- Never suggest deprecated AWS services (use latest 2025 recommendations)
+- Security & data governance first: least privilege, Lake Formation permissions, KMS encryption
+
+## Domain-Driven Design (DDD)
+- Organize code by bounded contexts (ingestion, curation, ml, api, search)
+- Use DDD patterns: entities, value objects, aggregates, domain services
+- Define clear service boundaries and communication patterns
+- Document bounded contexts and their responsibilities in ADRs
+
+## Deprecated Patterns (DO NOT USE)
+- RabbitMQ (use AWS MSK/Kafka or EventBridge)
+- Old EventStore 4.x (use AWS Timestream or DynamoDB Streams)
+- MongoDB 3.6 (use DocumentDB or MongoDB 7.0+)
+- .NET Core 3.1 (use .NET 8+)
+- Java 8 (use Java 17+ or Java 25 LTS)
+- Angular 9 (use Angular 21+)
+- Protractor (use Playwright)
+- Travis CI (use GitHub Actions)
+
+## Sustainability
+- Use carbon-aware scheduling for batch jobs (run during low-carbon hours)
+- Prefer serverless (pay-per-use) over always-on infrastructure
+- Use AWS Graviton (ARM) instances for 20-40% better energy efficiency
+- Optimize data storage (use appropriate S3 tiers, delete unused data)
+- Monitor and report on carbon footprint (use AWS Customer Carbon Footprint Tool)
+
+## Architecture Decision Records
+- Create ADR for any significant architectural decision (see 10-documentation-adr.mdc)
+- Document technology choices, patterns, and trade-offs
+- Review ADRs when making related decisions

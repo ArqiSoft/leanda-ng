@@ -1,0 +1,224 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leanda.io/schemas/File.json",
+  "title": "File",
+  "description": "File entity representing an uploaded file. Extracted from Sds.Osdr.Generic.Domain.File",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique file identifier"
+    },
+    "bucket": {
+      "type": "string",
+      "description": "Blob storage bucket where file is stored"
+    },
+    "blobId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Blob ID in the bucket"
+    },
+    "ownedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who owns this file"
+    },
+    "createdBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who created this file"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updatedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who last updated this file"
+    },
+    "updatedDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "parentId": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Parent folder ID (null for root)"
+    },
+    "name": {
+      "type": "string",
+      "description": "File name"
+    },
+    "length": {
+      "type": "integer",
+      "format": "int64",
+      "minimum": 0,
+      "description": "File size in bytes"
+    },
+    "md5": {
+      "type": "string",
+      "description": "MD5 hash of file content"
+    },
+    "isDeleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft delete marker"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["Generic", "Office", "Model", "Records", "Tabular", "Pdf", "WebPage", "Image", "Microscopy"],
+      "description": "File type classification"
+    },
+    "subType": {
+      "type": "string",
+      "description": "File subtype (e.g., Chemical, Crystal)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Loading", "Loaded", "Parsing", "Parsed", "Processing", "Processed", "ProcessedPartially", "Failed"],
+      "description": "Current processing status"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Image"
+      },
+      "description": "Generated preview images"
+    },
+    "blob": {
+      "$ref": "#/$defs/Blob",
+      "description": "Blob reference"
+    },
+    "metadata": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/KeyValue"
+      },
+      "description": "User-defined metadata"
+    },
+    "accessPermissions": {
+      "$ref": "#/$defs/AccessPermissions",
+      "description": "Access control settings"
+    },
+    "totalRecords": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total records in file (for Records type)"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Aggregate version for optimistic concurrency"
+    }
+  },
+  "$defs": {
+    "Image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "width": {
+          "type": "integer"
+        },
+        "mimeType": {
+          "type": "string"
+        },
+        "scale": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "bucket"]
+    },
+    "Blob": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "length": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "md5": {
+          "type": "string"
+        },
+        "contentType": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "bucket"]
+    },
+    "KeyValue": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": ["name", "value"]
+    },
+    "AccessPermissions": {
+      "type": "object",
+      "properties": {
+        "isPublic": {
+          "type": ["boolean", "null"]
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    }
+  },
+  "required": ["id", "bucket", "blobId", "ownedBy", "name", "type", "status"],
+  "additionalProperties": false,
+  "x-mongodb-collection": "Files",
+  "x-mongodb-indexes": [
+    {
+      "name": "idx_file_ownedBy",
+      "fields": { "ownedBy": 1 }
+    },
+    {
+      "name": "idx_file_parentId",
+      "fields": { "parentId": 1 }
+    },
+    {
+      "name": "idx_file_type_status",
+      "fields": { "type": 1, "status": 1 }
+    },
+    {
+      "name": "idx_file_blobId",
+      "fields": { "blobId": 1 }
+    }
+  ]
+}
+

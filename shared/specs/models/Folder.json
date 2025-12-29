@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leanda.io/schemas/Folder.json",
+  "title": "Folder",
+  "description": "Folder entity representing a container for files and subfolders. Extracted from Sds.Osdr.Generic.Domain.Folder",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique folder identifier"
+    },
+    "ownedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who owns this folder"
+    },
+    "createdBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who created this folder"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updatedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who last updated this folder"
+    },
+    "updatedDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "parentId": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Parent folder ID (null for root)"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "Folder name"
+    },
+    "isDeleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft delete marker"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Created", "Processing", "Processed", "Failed"],
+      "default": "Created",
+      "description": "Folder processing status"
+    },
+    "accessPermissions": {
+      "$ref": "#/$defs/AccessPermissions",
+      "description": "Access control settings"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Aggregate version for optimistic concurrency"
+    }
+  },
+  "$defs": {
+    "AccessPermissions": {
+      "type": "object",
+      "properties": {
+        "isPublic": {
+          "type": ["boolean", "null"]
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    }
+  },
+  "required": ["id", "ownedBy", "name"],
+  "additionalProperties": false,
+  "x-mongodb-collection": "Folders",
+  "x-mongodb-indexes": [
+    {
+      "name": "idx_folder_ownedBy",
+      "fields": { "ownedBy": 1 }
+    },
+    {
+      "name": "idx_folder_parentId",
+      "fields": { "parentId": 1 }
+    },
+    {
+      "name": "idx_folder_name_parentId",
+      "fields": { "name": 1, "parentId": 1, "ownedBy": 1 },
+      "unique": true
+    }
+  ]
+}
+

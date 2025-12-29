@@ -1,0 +1,61 @@
+---
+description: Protected files and configurations that require special handling
+globs: ["**/*"]
+alwaysApply: true
+---
+
+Protected files and configuration standards for Leanda.io:
+
+## Never Directly Edit
+These files should NEVER be directly edited by AI or automated tools:
+- `.env*` files (environment variables with secrets)
+- `*secrets*` files (any file containing secrets)
+- `terraform.tfstate` and `terraform.tfstate.backup` (infrastructure state)
+- `*.pem`, `*.key`, `*.p12`, `*.pfx` (certificates and private keys)
+- `*.jks`, `*.keystore` (Java keystores)
+- AWS credentials files (`~/.aws/credentials`, `~/.aws/config`)
+
+## Require Code Review
+These files require explicit code review before merging:
+- CDK stack definitions (`**/*.cdk.ts`, `**/cdk.json`)
+- IAM policy definitions (CloudFormation, CDK, Terraform)
+- Lake Formation permissions and data cell policies
+- Security group and NACL configurations
+- KMS key policies and encryption configurations
+- Network configurations (VPC, subnets, route tables)
+
+## Flag Changes For Review
+Flag these changes for human review:
+- Authentication and authorization modules
+- Encryption and cryptographic utilities
+- Security middleware and filters
+- Input validation and sanitization logic
+- Error handling that might expose sensitive information
+
+## Backwards Compatibility
+- Preserve backwards compatibility in public APIs
+- Never remove or rename public API endpoints without deprecation period
+- Maintain API versioning strategy (support multiple versions simultaneously)
+- Document breaking changes in CHANGELOG.md
+- Use feature flags for gradual rollouts of breaking changes
+
+## Configuration Management
+- Use environment-specific configuration files (`.env.development`, `.env.production`)
+- Never commit secrets to version control (use `.gitignore`, `.env.example`)
+- Use AWS Systems Manager Parameter Store or Secrets Manager for production secrets
+- Document all required environment variables in README
+- Validate configuration on application startup
+
+## Infrastructure as Code
+- All infrastructure changes must go through CDK/Terraform (no manual changes)
+- Require `cdk diff` or `terraform plan` review before applying changes
+- Use separate stacks/environments for dev, staging, production
+- Tag all resources for cost allocation and management
+- Document infrastructure decisions in ADRs
+
+## Database Migrations
+- Never run destructive migrations (DROP TABLE, TRUNCATE) without backup
+- Test migrations on staging environment first
+- Include rollback scripts for all migrations
+- Document migration steps and expected downtime
+- Use versioned migration files with timestamps

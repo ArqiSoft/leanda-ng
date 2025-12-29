@@ -1,0 +1,60 @@
+# Protected Files List
+# Files that should NEVER be modified by autonomous testing agent
+
+# Cursor rules and configuration
+.cursor/rules/**
+.cursor/plans/**
+
+# Infrastructure as Code
+infrastructure/**
+*.tfstate
+*.tfstate.backup
+*.tfvars
+
+# Security and secrets
+docs/security/**
+*.env*
+*secrets*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+~/.aws/**
+
+# CI/CD configuration (requires review)
+.github/workflows/**
+.gitlab-ci.yml
+Jenkinsfile
+
+# Documentation that requires review
+docs/adr/**
+docs/architecture.md
+docs/cloud-architecture.md
+
+# Package management (lock files)
+package-lock.json
+yarn.lock
+poetry.lock
+Pipfile.lock
+
+# Generated files
+node_modules/**
+target/**
+dist/**
+build/**
+
+# Database and state files
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE configuration
+.idea/**
+.vscode/**
+
+# OS files
+.DS_Store
+Thumbs.db
+

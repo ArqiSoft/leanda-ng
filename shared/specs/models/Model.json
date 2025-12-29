@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leanda.io/schemas/Model.json",
+  "title": "Model",
+  "description": "Machine Learning Model entity. Extracted from Sds.Osdr.MachineLearning.Domain",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique model identifier"
+    },
+    "ownedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who owns this model"
+    },
+    "createdBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who created this model"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updatedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who last updated this model"
+    },
+    "updatedDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "parentId": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Parent folder ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Model name"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Created", "Training", "Trained", "Failed"],
+      "description": "Model training status"
+    },
+    "blob": {
+      "$ref": "#/$defs/Blob",
+      "description": "Trained model blob reference"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Image"
+      },
+      "description": "Generated visualizations"
+    },
+    "property": {
+      "$ref": "#/$defs/Property",
+      "description": "Target property for prediction"
+    },
+    "dataset": {
+      "$ref": "#/$defs/Dataset",
+      "description": "Training dataset info"
+    },
+    "method": {
+      "type": "string",
+      "description": "ML algorithm/method used"
+    },
+    "fingerprints": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Fingerprint"
+      },
+      "description": "Fingerprint configurations"
+    },
+    "scaler": {
+      "type": "string",
+      "description": "Scaler used for normalization"
+    },
+    "kFold": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "K-fold cross-validation parameter"
+    },
+    "testDataSize": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Test data fraction"
+    },
+    "subSampleSize": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Subsample size fraction"
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Target classes/values"
+    },
+    "consensusWeight": {
+      "type": "number",
+      "description": "Weight for consensus prediction"
+    },
+    "metrics": {
+      "type": "object",
+      "description": "Model performance metrics",
+      "properties": {
+        "accuracy": { "type": "number" },
+        "precision": { "type": "number" },
+        "recall": { "type": "number" },
+        "f1Score": { "type": "number" },
+        "auc": { "type": "number" },
+        "r2": { "type": "number" },
+        "rmse": { "type": "number" }
+      }
+    },
+    "accessPermissions": {
+      "$ref": "#/$defs/AccessPermissions",
+      "description": "Access control settings"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Aggregate version"
+    }
+  },
+  "$defs": {
+    "Blob": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bucket": {
+          "type": "string"
+        }
+      }
+    },
+    "Image": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "height": { "type": "integer" },
+        "width": { "type": "integer" },
+        "mimeType": { "type": "string" }
+      }
+    },
+    "Property": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Classification", "Regression"]
+        },
+        "units": {
+          "type": "string"
+        }
+      }
+    },
+    "Dataset": {
+      "type": "object",
+      "properties": {
+        "blobId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "fileName": {
+          "type": "string"
+        },
+        "recordCount": {
+          "type": "integer"
+        }
+      }
+    },
+    "Fingerprint": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "size": {
+          "type": "integer"
+        },
+        "radius": {
+          "type": "integer"
+        }
+      }
+    },
+    "AccessPermissions": {
+      "type": "object",
+      "properties": {
+        "isPublic": {
+          "type": ["boolean", "null"]
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    }
+  },
+  "required": ["id", "ownedBy", "name", "status"],
+  "additionalProperties": false,
+  "x-mongodb-collection": "Models",
+  "x-mongodb-indexes": [
+    {
+      "name": "idx_model_ownedBy",
+      "fields": { "ownedBy": 1 }
+    },
+    {
+      "name": "idx_model_parentId",
+      "fields": { "parentId": 1 }
+    },
+    {
+      "name": "idx_model_status",
+      "fields": { "status": 1 }
+    },
+    {
+      "name": "idx_model_property_name",
+      "fields": { "property.name": 1 }
+    }
+  ]
+}
+

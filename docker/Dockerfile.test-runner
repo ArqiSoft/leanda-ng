@@ -1,0 +1,27 @@
+# Test Runner Dockerfile
+# Used for running unit and integration tests in Docker
+
+FROM maven:3.9-eclipse-temurin-21 AS test-runner
+
+# Install additional tools
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /workspace
+
+# Copy Maven wrapper files (optional - only if they exist)
+# Docker COPY doesn't support conditionals, so we'll handle this in docker-compose
+# For now, create a dummy .mvn directory to avoid build failure
+RUN mkdir -p .mvn
+
+# Set Maven options for better performance
+# Note: MaxPermSize was removed in Java 8+, using only heap size
+ENV MAVEN_OPTS="-Xmx2048m"
+
+# Default command (can be overridden)
+CMD ["mvn", "--version"]
+

@@ -1,0 +1,85 @@
+---
+description: AWS Lambda and serverless optimization patterns
+globs: ["**/aws/**", "**/*.cdk.ts", "**/*.py", "**/*.java"]
+alwaysApply: false
+---
+
+AWS Lambda and serverless optimization standards for Leanda.io:
+
+## Cold Start Optimization
+- Use GraalVM native compilation for Quarkus Lambda functions (< 1s cold start)
+  - Build with `quarkus.package.type=native` and `quarkus.native.container-build=true`
+  - Test native images in Lambda-compatible environment
+- Keep deployment packages under 50MB (use Lambda layers for dependencies)
+- Prefer ARM64 architecture for better price-performance (20% cost savings)
+- Use Provisioned Concurrency only for latency-critical user-facing APIs
+- Initialize SDK clients and database connections outside handler function (reuse across invocations)
+- Use Lambda SnapStart for Java functions (faster cold starts, lower costs)
+
+## Performance Optimization
+- Set memory based on workload (CPU scales with memory in Lambda)
+  - Use AWS Lambda Power Tuning tool to find optimal memory configuration
+  - Test different memory sizes (128MB to 10GB) and measure cost vs execution time
+- Implement connection pooling with RDS Proxy for database connections
+  - Reuse connections across invocations
+  - Reduce connection overhead and improve performance
+- Use async invocation for non-blocking operations (fire-and-forget)
+- Prefer Step Functions for orchestration over chained Lambda invocations
+  - Better error handling and retry logic
+  - Lower cost for complex workflows
+- Use Lambda function URLs with IAM auth for internal APIs (no API Gateway overhead)
+
+## Error Handling
+- Configure Dead Letter Queues (DLQ) for async invocations
+  - SQS DLQ for failed async invocations
+  - Monitor DLQ for error patterns
+- Implement idempotency for all event-driven functions
+  - Use idempotency keys in event payloads
+  - Check for duplicate processing before executing
+- Use structured error responses with correlation IDs
+- Set appropriate retry configurations:
+  - `maxRetryAttempts`: 2-3 for transient errors
+  - `retryOnError`: Configure which errors to retry
+- Log errors with full context for debugging (include event payload, stack trace)
+
+## Security
+- Use IAM roles with least-privilege permissions (never use execution role for multiple purposes)
+- Never store secrets in environment variables (use AWS Secrets Manager or Parameter Store)
+- Enable VPC access only when necessary (adds latency and cost)
+  - Use VPC endpoints for AWS service access (reduces NAT Gateway costs)
+- Use Lambda function URLs with IAM auth for internal APIs
+- Enable code signing for production deployments (verify code integrity)
+- Use Lambda layers for shared code and dependencies (reduce package size)
+
+## Resource Configuration
+- Set appropriate timeout values:
+  - Default: 3 seconds for API handlers
+  - Maximum: 15 minutes for batch processing
+  - Prevent runaway costs from long-running functions
+- Use Reserved Concurrency to prevent cost spikes from concurrent executions
+  - Set reserved concurrency for critical functions
+  - Use unreserved concurrency pool for non-critical functions
+- Configure environment variables per environment (dev, staging, prod)
+- Use Lambda environment variables for non-sensitive configuration
+
+## Event-Driven Patterns
+- Use EventBridge for event routing (decouple producers and consumers)
+- Use SQS for reliable message queuing (dead letter queues, visibility timeout)
+- Use SNS for pub/sub messaging (fan-out to multiple subscribers)
+- Process events in batches when possible (SQS batch processing, DynamoDB streams)
+- Use Step Functions for complex workflows (orchestration, error handling, retries)
+
+## Monitoring and Observability
+- Enable X-Ray tracing for all Lambda functions
+- Use structured logging with correlation IDs (request_id, trace_id)
+- Publish custom CloudWatch metrics for business events
+- Set up CloudWatch alarms for error rates and latency
+- Use Lambda Insights for performance monitoring (CPU, memory, duration)
+
+## Cost Optimization
+- Right-size Lambda memory using Power Tuning tool
+- Use ARM64 architecture for 20% cost savings
+- Optimize package size (remove unused dependencies, use layers)
+- Use async invocation for non-blocking operations
+- Set appropriate timeouts to prevent runaway costs
+- Use Reserved Concurrency to prevent cost spikes

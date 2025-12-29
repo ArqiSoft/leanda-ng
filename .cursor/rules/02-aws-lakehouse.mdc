@@ -1,0 +1,48 @@
+---
+description: AWS Lakehouse & Bedrock / SageMaker patterns
+globs: ["**/aws/**", "**/*.cdk.ts", "**/*.py"]
+---
+
+When working with AWS:
+- Use AWS CDK (TypeScript v2) for all infrastructure → prefer constructs over raw Cfn
+- Prefer SageMaker Unified Studio + Processing Jobs over raw boto3 where possible
+- Use Bedrock Agents + Claude 4 Sonnet / 3.7 Sonnet for curation & ontology mapping
+- Data lake pattern: S3 + Iceberg tables + Lake Formation + Glue Catalog
+- Always include data lineage, versioning & time-travel considerations
+- Use OpenSearch vector search + Bedrock embeddings for semantic scientific search
+- Prefer zero-ETL patterns & EventBridge triggers over glue crawlers when possible
+
+## Event-Driven Patterns
+- Use EventBridge Pipes for point-to-point event routing (simpler than custom Lambda)
+- Prefer EventBridge Scheduler over CloudWatch Events (more features, better integration)
+- Use Step Functions Distributed Map for large-scale parallel processing
+- Configure S3 Event Notifications via EventBridge (not direct S3 notifications)
+- Use EventBridge Archive for event replay and debugging
+
+## SageMaker ML Patterns
+- Use SageMaker Feature Store for ML feature management (versioned, discoverable features)
+- Implement SageMaker Model Registry for model versioning and deployment
+- Use SageMaker Pipelines for ML workflow orchestration
+- Use SageMaker Processing Jobs for data preprocessing (scales automatically)
+- Use SageMaker Batch Transform for large-scale inference (cost-effective)
+
+## Bedrock AI Patterns
+- Use Bedrock Guardrails for safe AI responses (content filtering, PII detection)
+- Configure Bedrock Agents with specific tools and knowledge bases
+- Use Bedrock Model Evaluation for comparing model performance
+- Implement prompt versioning and A/B testing for prompt optimization
+- Use Bedrock Knowledge Bases for RAG (Retrieval-Augmented Generation)
+
+## OpenSearch Patterns
+- Configure OpenSearch Serverless for auto-scaling search (no cluster management)
+- Use OpenSearch vector search with Bedrock embeddings for semantic search
+- Implement hybrid search (lexical + vector) for best results
+- Use OpenSearch index templates for consistent index configurations
+- Monitor OpenSearch performance and optimize query patterns
+
+## Data Lake Patterns
+- Use S3 Event Notifications via EventBridge for real-time processing
+- Implement data quality checks with Glue Data Quality
+- Use Lake Formation data cells for fine-grained access control
+- Enable data lineage tracking in Glue Data Catalog
+- Use Athena for SQL queries on Iceberg tables (serverless, pay-per-query)

@@ -1,0 +1,68 @@
+---
+description: Observability, logging, tracing, and resilience patterns
+globs: ["**/*"]
+alwaysApply: true
+---
+
+Observability and resilience standards for Leanda.io:
+
+## Distributed Tracing
+- Use OpenTelemetry for ALL distributed tracing across services
+- Enable AWS X-Ray for Lambda functions and Quarkus services
+- Add custom spans for database queries, external API calls, and business operations
+- Propagate trace context across service boundaries (HTTP headers, message attributes)
+- Configure sampling rules to balance cost and visibility (100% for errors, 10% for success)
+- Use trace IDs in all log entries for correlation
+
+## Structured Logging
+- Use structured logging (JSON format) for all log entries
+- Python: Use `structlog` with JSON output formatter
+- Java: Use SLF4J with JSON encoder (Logback, Log4j2)
+- TypeScript: Use structured logging library (Pino, Winston with JSON)
+- Include correlation IDs: `request_id`, `trace_id`, `span_id`, `user_id`
+- Include contextual fields: `service`, `operation`, `environment`, `version`
+
+## Log Levels and Content
+- Use appropriate log levels: ERROR (failures), WARN (recoverable issues), INFO (business events), DEBUG (detailed debugging)
+- Never log sensitive data (PII, credentials, secrets)
+- Log all errors with full context (stack trace, request details, user context)
+- Never swallow exceptions silently (always log or re-throw)
+- Include timing information for performance-critical operations
+
+## Metrics and Monitoring
+- Define Service Level Objectives (SLOs) and error budgets for each service
+- Expose Prometheus-compatible metrics endpoints (`/metrics`)
+- Track business metrics: data uploads, curation jobs, search queries, API calls
+- Track technical metrics: latency (p50, p95, p99), error rates, throughput
+- Use CloudWatch custom metrics for AWS-native monitoring
+- Set up dashboards per bounded context (ingestion, curation, ML, API)
+
+## Health Checks
+- Implement health check endpoints: `/health` (liveness), `/ready` (readiness)
+- Health checks should verify: database connectivity, external service availability, disk space
+- Use Kubernetes/ECS health checks for container orchestration
+- Return appropriate HTTP status codes (200 OK, 503 Service Unavailable)
+
+## Resilience Patterns
+- Implement circuit breakers for external service calls
+  - Python: Use `tenacity` for retries with exponential backoff
+  - Java: Use Resilience4j for circuit breakers, retries, rate limiters
+- Configure timeouts for all external calls (HTTP, database, AWS SDK)
+- Use bulkhead pattern to isolate failures (separate thread pools, connection pools)
+- Implement graceful degradation (return cached data if service unavailable)
+- Use retry with exponential backoff and jitter for transient failures
+
+## Alerting
+- Set up alerts for SLO violations (error rate, latency thresholds)
+- Alert on critical errors (5xx responses, exceptions, failed jobs)
+- Use alert severity levels: P1 (immediate), P2 (< 1hr), P3 (< 24hr)
+- Include runbook links in alert descriptions
+- Route alerts to appropriate channels (PagerDuty for P1, Slack for P2/P3)
+- Implement alert suppression during maintenance windows
+
+## Error Handling
+- Use structured error responses with correlation IDs
+- Return appropriate HTTP status codes (400 Bad Request, 401 Unauthorized, 404 Not Found, 500 Internal Server Error)
+- Include error codes for programmatic error handling
+- Log errors with full context before returning to client
+- Never expose internal implementation details in error messages

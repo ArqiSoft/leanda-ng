@@ -1,0 +1,362 @@
+asyncapi: 3.0.0
+info:
+  title: Office Processor Events
+  version: 1.0.0
+  description: |
+    Event contracts for the Office File Processor service.
+    This service handles conversion of Office documents to PDF and metadata extraction.
+
+channels:
+  office-convert-commands:
+    description: Commands to convert Office documents to PDF
+    messages:
+      ConvertToPdfCommand:
+        $ref: '#/components/messages/ConvertToPdfCommand'
+
+  office-extract-meta-commands:
+    description: Commands to extract metadata from Office documents
+    messages:
+      ExtractMetaCommand:
+        $ref: '#/components/messages/ExtractMetaCommand'
+
+  office-converted-events:
+    description: Events published when Office documents are converted to PDF
+    messages:
+      ConvertedToPdfEvent:
+        $ref: '#/components/messages/ConvertedToPdfEvent'
+      ConvertToPdfFailedEvent:
+        $ref: '#/components/messages/ConvertToPdfFailedEvent'
+
+  office-meta-extracted-events:
+    description: Events published when metadata is extracted from Office documents
+    messages:
+      MetaExtractedEvent:
+        $ref: '#/components/messages/MetaExtractedEvent'
+      MetaExtractionFailedEvent:
+        $ref: '#/components/messages/MetaExtractionFailedEvent'
+
+operations:
+  convertToPdf:
+    action: receive
+    channel:
+      $ref: '#/channels/office-convert-commands'
+    title: Receive ConvertToPdf command
+    description: Service receives command to convert Office document to PDF
+
+  publishConvertedToPdf:
+    action: send
+    channel:
+      $ref: '#/channels/office-converted-events'
+    title: Publish ConvertedToPdf event
+    description: Service publishes event when conversion succeeds
+
+  publishConvertToPdfFailed:
+    action: send
+    channel:
+      $ref: '#/channels/office-converted-events'
+    title: Publish ConvertToPdfFailed event
+    description: Service publishes event when conversion fails
+
+  extractMeta:
+    action: receive
+    channel:
+      $ref: '#/channels/office-extract-meta-commands'
+    title: Receive ExtractMeta command
+    description: Service receives command to extract metadata from Office document
+
+  publishMetaExtracted:
+    action: send
+    channel:
+      $ref: '#/channels/office-meta-extracted-events'
+    title: Publish MetaExtracted event
+    description: Service publishes event when metadata extraction succeeds
+
+  publishMetaExtractionFailed:
+    action: send
+    channel:
+      $ref: '#/channels/office-meta-extracted-events'
+    title: Publish MetaExtractionFailed event
+    description: Service publishes event when metadata extraction fails
+
+components:
+  messages:
+    ConvertToPdfCommand:
+      name: ConvertToPdfCommand
+      title: Convert to PDF Command
+      summary: Command to convert an Office document to PDF
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ConvertToPdfCommand'
+
+    ExtractMetaCommand:
+      name: ExtractMetaCommand
+      title: Extract Metadata Command
+      summary: Command to extract metadata from an Office document
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ExtractMetaCommand'
+
+    ConvertedToPdfEvent:
+      name: ConvertedToPdfEvent
+      title: Converted to PDF Event
+      summary: Event published when Office document is successfully converted to PDF
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ConvertedToPdfEvent'
+
+    ConvertToPdfFailedEvent:
+      name: ConvertToPdfFailedEvent
+      title: Convert to PDF Failed Event
+      summary: Event published when Office document conversion fails
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ConvertToPdfFailedEvent'
+
+    MetaExtractedEvent:
+      name: MetaExtractedEvent
+      title: Meta Extracted Event
+      summary: Event published when metadata is successfully extracted from Office document
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MetaExtractedEvent'
+
+    MetaExtractionFailedEvent:
+      name: MetaExtractionFailedEvent
+      title: Meta Extraction Failed Event
+      summary: Event published when metadata extraction fails
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MetaExtractionFailedEvent'
+
+  schemas:
+    ConvertToPdfCommand:
+      type: object
+      required:
+        - id
+        - blobId
+        - bucket
+        - userId
+        - correlationId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File record ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        blobId:
+          type: string
+          format: uuid
+          description: Source blob ID (Office document)
+          example: "660e8400-e29b-41d4-a716-446655440001"
+        bucket:
+          type: string
+          description: Storage bucket identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        userId:
+          type: string
+          format: uuid
+          description: User ID who initiated the conversion
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID for tracking the operation
+          example: "880e8400-e29b-41d4-a716-446655440003"
+
+    ExtractMetaCommand:
+      type: object
+      required:
+        - id
+        - blobId
+        - bucket
+        - userId
+        - correlationId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File record ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        blobId:
+          type: string
+          format: uuid
+          description: Source blob ID (Office document)
+          example: "660e8400-e29b-41d4-a716-446655440001"
+        bucket:
+          type: string
+          description: Storage bucket identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        userId:
+          type: string
+          format: uuid
+          description: User ID who initiated the extraction
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID for tracking the operation
+          example: "880e8400-e29b-41d4-a716-446655440003"
+
+    ConvertedToPdfEvent:
+      type: object
+      required:
+        - id
+        - blobId
+        - bucket
+        - userId
+        - timestamp
+        - correlationId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File record ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        blobId:
+          type: string
+          format: uuid
+          description: Generated PDF blob ID
+          example: "990e8400-e29b-41d4-a716-446655440004"
+        bucket:
+          type: string
+          description: Storage bucket identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+          example: "2025-01-15T10:30:00Z"
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID for tracking the operation
+          example: "880e8400-e29b-41d4-a716-446655440003"
+
+    ConvertToPdfFailedEvent:
+      type: object
+      required:
+        - id
+        - userId
+        - message
+        - timestamp
+        - correlationId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File record ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        message:
+          type: string
+          description: Error message
+          example: "Cannot find file converter for unknown.xyz"
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+          example: "2025-01-15T10:30:00Z"
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID for tracking the operation
+          example: "880e8400-e29b-41d4-a716-446655440003"
+
+    MetaExtractedEvent:
+      type: object
+      required:
+        - id
+        - userId
+        - properties
+        - timestamp
+        - correlationId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File record ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        properties:
+          type: array
+          description: Extracted metadata properties
+          items:
+            $ref: '#/components/schemas/Property'
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+          example: "2025-01-15T10:30:00Z"
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID for tracking the operation
+          example: "880e8400-e29b-41d4-a716-446655440003"
+
+    MetaExtractionFailedEvent:
+      type: object
+      required:
+        - id
+        - userId
+        - message
+        - timestamp
+        - correlationId
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File record ID
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        userId:
+          type: string
+          format: uuid
+          description: User ID
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        message:
+          type: string
+          description: Error message
+          example: "Cannot extract metadata from file: unsupported format"
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+          example: "2025-01-15T10:30:00Z"
+        correlationId:
+          type: string
+          format: uuid
+          description: Correlation ID for tracking the operation
+          example: "880e8400-e29b-41d4-a716-446655440003"
+
+    Property:
+      type: object
+      required:
+        - name
+        - value
+      properties:
+        name:
+          type: string
+          description: Property name
+          example: "Title"
+        value:
+          type: string
+          description: Property value
+          example: "Research Document"
+        error:
+          type: number
+          format: double
+          description: Error value (optional, for numeric properties)
+          example: 0.01
+

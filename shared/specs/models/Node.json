@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leanda.io/schemas/Node.json",
+  "title": "Node",
+  "description": "Node entity - unified view of Users, Folders, Files, Records, Models. Used in Nodes collection for hierarchical navigation.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique node identifier"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["User", "Folder", "File", "Record", "Model"],
+      "description": "Node type"
+    },
+    "subType": {
+      "type": "string",
+      "description": "Node subtype (e.g., Chemical, Office, Model)"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name"
+    },
+    "ownedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Owner user ID"
+    },
+    "createdBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Creator user ID"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updatedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Last updater user ID"
+    },
+    "updatedDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "parentId": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Parent node ID"
+    },
+    "status": {
+      "type": "string",
+      "description": "Processing status"
+    },
+    "isDeleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft delete marker"
+    },
+    "blob": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "bucket": { "type": "string" },
+        "length": { "type": "integer" },
+        "md5": { "type": "string" }
+      },
+      "description": "Blob reference (for Files)"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "bucket": { "type": "string" },
+          "height": { "type": "integer" },
+          "width": { "type": "integer" },
+          "mimeType": { "type": "string" },
+          "scale": { "type": "string" }
+        }
+      },
+      "description": "Preview images"
+    },
+    "totalRecords": {
+      "type": "integer",
+      "description": "Total records in file"
+    },
+    "accessPermissions": {
+      "type": "object",
+      "properties": {
+        "isPublic": { "type": ["boolean", "null"] },
+        "users": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "groups": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        }
+      },
+      "description": "Access control"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Aggregate version"
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Display name (for User nodes)"
+    },
+    "firstName": {
+      "type": "string",
+      "description": "First name (for User nodes)"
+    },
+    "lastName": {
+      "type": "string",
+      "description": "Last name (for User nodes)"
+    },
+    "loginName": {
+      "type": "string",
+      "description": "Login name (for User nodes)"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Email (for User nodes)"
+    },
+    "avatar": {
+      "type": "string",
+      "description": "Avatar URL (for User nodes)"
+    }
+  },
+  "required": ["id", "type"],
+  "additionalProperties": true,
+  "x-mongodb-collection": "Nodes",
+  "x-mongodb-indexes": [
+    {
+      "name": "idx_node_type",
+      "fields": { "type": 1 }
+    },
+    {
+      "name": "idx_node_parentId",
+      "fields": { "parentId": 1 }
+    },
+    {
+      "name": "idx_node_ownedBy",
+      "fields": { "ownedBy": 1 }
+    },
+    {
+      "name": "idx_node_type_status",
+      "fields": { "type": 1, "status": 1 }
+    },
+    {
+      "name": "idx_node_isDeleted_parentId",
+      "fields": { "isDeleted": 1, "parentId": 1 }
+    }
+  ]
+}
+

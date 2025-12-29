@@ -1,0 +1,1501 @@
+openapi: 3.1.0
+info:
+  title: Leanda Core API
+  description: |
+    Core API for Leanda.io Open Science Platform.
+    Extracted from legacy .NET WebApi controllers for Quarkus migration.
+  version: 2.0.0
+  contact:
+    name: Leanda Team
+  license:
+    name: MIT
+
+servers:
+  - url: /api/v2
+    description: Leanda NG Core API
+
+security:
+  - bearerAuth: []
+  - oidc: []
+
+tags:
+  - name: Nodes
+    description: File and folder node operations
+  - name: Entities
+    description: Generic entity operations (files, folders, records, models)
+  - name: Users
+    description: User management
+  - name: Exports
+    description: Export operations
+  - name: MachineLearning
+    description: Machine learning model training and prediction
+  - name: Health
+    description: Health check endpoints
+
+paths:
+  # ============== HEALTH ENDPOINTS ==============
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /ready:
+    get:
+      tags: [Health]
+      summary: Readiness check
+      operationId: getReadiness
+      security: []
+      responses:
+        '200':
+          description: Service is ready
+        '503':
+          description: Service is not ready
+
+  /version:
+    get:
+      tags: [Health]
+      summary: Get API version
+      operationId: getVersion
+      security: []
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+
+  # ============== NODES ENDPOINTS ==============
+  /nodes:
+    get:
+      tags: [Nodes]
+      summary: Get node list with filter
+      operationId: getNodeList
+      parameters:
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Projection'
+      responses:
+        '200':
+          description: List of nodes
+          headers:
+            X-Pagination:
+              schema:
+                type: string
+            X-Breadcrumbs:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedNodes'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /nodes/{id}:
+    get:
+      tags: [Nodes]
+      summary: Get node by ID
+      operationId: getNodeById
+      parameters:
+        - $ref: '#/components/parameters/NodeId'
+        - $ref: '#/components/parameters/Projection'
+      responses:
+        '200':
+          description: Node details
+          headers:
+            X-Breadcrumbs:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Node'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /nodes/{id}/nodes:
+    get:
+      tags: [Nodes]
+      summary: Get inner nodes (children)
+      operationId: getInnerNodes
+      parameters:
+        - $ref: '#/components/parameters/NodeId'
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: Filter by node type (comma-separated)
+        - name: status
+          in: query
+          schema:
+            type: string
+          description: Filter by status
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of child nodes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedNodes'
+
+  /nodes/me:
+    get:
+      tags: [Nodes]
+      summary: Get current user's root node
+      operationId: getCurrentUserRootNode
+      parameters:
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Projection'
+      responses:
+        '200':
+          description: Current user's nodes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedNodes'
+
+  /nodes/me/nodes:
+    get:
+      tags: [Nodes]
+      summary: Get nodes in user's root folder
+      operationId: getNodesInRoot
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of nodes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedNodes'
+
+  /nodes/public:
+    get:
+      tags: [Nodes]
+      summary: Get public nodes
+      operationId: getPublicNodes
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Projection'
+      responses:
+        '200':
+          description: Public nodes list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedNodes'
+
+  /nodes/current:
+    post:
+      tags: [Nodes]
+      summary: Set current node for user session
+      operationId: setCurrentNode
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetCurrentNodeRequest'
+      responses:
+        '200':
+          description: Current node set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Node'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /nodes/{id}.zip:
+    get:
+      tags: [Nodes]
+      summary: Download node content as ZIP
+      operationId: downloadNodeAsZip
+      parameters:
+        - $ref: '#/components/parameters/NodeId'
+      responses:
+        '200':
+          description: ZIP file download
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+
+  /nodes/{id}/page:
+    get:
+      tags: [Nodes]
+      summary: Get page index for node
+      operationId: getIndexOnPage
+      parameters:
+        - $ref: '#/components/parameters/NodeId'
+        - name: pageSize
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Page number
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pageNumber:
+                    type: integer
+
+  # ============== ENTITIES ENDPOINTS ==============
+  /entities/{type}:
+    get:
+      tags: [Entities]
+      summary: Get entity list by type
+      operationId: getEntityList
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Projection'
+      responses:
+        '200':
+          description: Entity list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedEntities'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /entities/{type}/me:
+    get:
+      tags: [Entities]
+      summary: Get current user's entities by type
+      operationId: getMyEntityList
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Projection'
+      responses:
+        '200':
+          description: Entity list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedEntities'
+
+  /entities/{type}/public:
+    get:
+      tags: [Entities]
+      summary: Get public entities by type
+      operationId: getPublicEntities
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/Filter'
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Projection'
+      responses:
+        '200':
+          description: Public entity list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedEntities'
+
+  /entities/{type}/{id}:
+    get:
+      tags: [Entities]
+      summary: Get single entity
+      operationId: getSingleEntity
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/EntityId'
+        - $ref: '#/components/parameters/Projection'
+      responses:
+        '200':
+          description: Entity details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entity'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/{type}/{id}/{propertyPath}:
+    get:
+      tags: [Entities]
+      summary: Get entity property by path
+      operationId: getEntityProperty
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/EntityId'
+        - name: propertyPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Property value
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/{type}/{id}/stream:
+    get:
+      tags: [Entities]
+      summary: Get aggregate stream events
+      operationId: getAggregateStream
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/EntityId'
+        - name: start
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: count
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        '200':
+          description: Stream events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StreamEvent'
+
+  /entities/{type}/{id}/images/{imageId}:
+    get:
+      tags: [Entities]
+      summary: Get entity image
+      operationId: getEntityImage
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/EntityId'
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: content-disposition
+          in: query
+          schema:
+            type: string
+            enum: [inline, attachment]
+            default: inline
+      responses:
+        '200':
+          description: Image file
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/{type}/{id}/blobs/{blobId}:
+    get:
+      tags: [Entities]
+      summary: Get entity blob
+      operationId: getEntityBlob
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/EntityId'
+        - name: blobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: content-disposition
+          in: query
+          schema:
+            type: string
+            enum: [inline, attachment]
+            default: inline
+      responses:
+        '200':
+          description: Blob content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/{type}/{id}/blobs/{blobId}/info:
+    get:
+      tags: [Entities]
+      summary: Get blob metadata info
+      operationId: getBlobMetadataInfo
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/EntityId'
+        - name: blobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Blob metadata
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/{type}/{id}/metadata:
+    get:
+      tags: [Entities]
+      summary: Get entity metadata
+      operationId: getEntityMetadata
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/EntityId'
+      responses:
+        '200':
+          description: Entity metadata
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/{type}/{id}/metadata/{infoboxType}:
+    get:
+      tags: [Entities]
+      summary: Get infobox metadata
+      operationId: getInfoboxMetadata
+      parameters:
+        - $ref: '#/components/parameters/EntityType'
+        - $ref: '#/components/parameters/EntityId'
+        - name: infoboxType
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Infobox metadata
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/folders:
+    post:
+      tags: [Entities]
+      summary: Create folder
+      operationId: createFolder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFolderRequest'
+      responses:
+        '202':
+          description: Folder creation accepted
+          headers:
+            Location:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /entities/files/{id}:
+    patch:
+      tags: [Entities]
+      summary: Patch file (rename, move, update metadata, grant access)
+      operationId: patchFile
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+        - name: version
+          in: query
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/JsonPatch'
+      responses:
+        '202':
+          description: Update accepted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/folders/{id}:
+    patch:
+      tags: [Entities]
+      summary: Patch folder (rename, move, grant access)
+      operationId: patchFolder
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+        - name: version
+          in: query
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/JsonPatch'
+      responses:
+        '202':
+          description: Update accepted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/models/{id}:
+    patch:
+      tags: [Entities]
+      summary: Patch model (rename, move, grant access)
+      operationId: patchModel
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+        - name: version
+          in: query
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/JsonPatch'
+      responses:
+        '202':
+          description: Update accepted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/records/{id}:
+    patch:
+      tags: [Entities]
+      summary: Patch record (update fields, grant access)
+      operationId: patchRecord
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+        - name: version
+          in: query
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/JsonPatch'
+      responses:
+        '202':
+          description: Update accepted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============== USERS ENDPOINTS ==============
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Users]
+      summary: Create or update user
+      operationId: createOrUpdateUser
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrUpdateUserRequest'
+      responses:
+        '202':
+          description: User creation/update accepted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /users/{id}/public-info:
+    get:
+      tags: [Users]
+      summary: Get user public info
+      operationId: getUserPublicInfo
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User public info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPublicInfo'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /me:
+    get:
+      tags: [Users]
+      summary: Get current user
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Current user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============== EXPORTS ENDPOINTS ==============
+  /exports/files:
+    post:
+      tags: [Exports]
+      summary: Export file with selected properties
+      operationId: exportFile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportFileRequest'
+      responses:
+        '202':
+          description: Export started
+          headers:
+            Location:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # ============== MACHINE LEARNING ENDPOINTS ==============
+  /machinelearning/models:
+    post:
+      tags: [MachineLearning]
+      summary: Start model training
+      operationId: createModel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateModelRequest'
+      responses:
+        '202':
+          description: Training started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingResponse'
+
+  /machinelearning/models/{id}:
+    patch:
+      tags: [MachineLearning]
+      summary: Update model targets/consensus weight
+      operationId: patchMLModel
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              $ref: '#/components/schemas/JsonPatch'
+      responses:
+        '200':
+          description: Model updated
+
+  /machinelearning/predictions:
+    post:
+      tags: [MachineLearning]
+      summary: Create dataset prediction
+      operationId: createDatasetPrediction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunDatasetPredictionRequest'
+      responses:
+        '202':
+          description: Prediction started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionResponse'
+
+  /machinelearning/predictions/structure:
+    post:
+      tags: [MachineLearning]
+      summary: Create single structure prediction
+      operationId: createStructurePrediction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunStructurePredictionRequest'
+      responses:
+        '200':
+          description: Prediction ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  predictionId:
+                    type: string
+                    format: uuid
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /machinelearning/predictions/{id}:
+    get:
+      tags: [MachineLearning]
+      summary: Get prediction result
+      operationId: getPrediction
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+      responses:
+        '200':
+          description: Prediction result
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /machinelearning/predictions/{id}/status:
+    get:
+      tags: [MachineLearning]
+      summary: Get prediction status
+      operationId: getPredictionStatus
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+      responses:
+        '200':
+          description: Prediction status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionStatus'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /machinelearning/predictions/{id}/report:
+    get:
+      tags: [MachineLearning]
+      summary: Get prediction report
+      operationId: getPredictionReport
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+      responses:
+        '200':
+          description: Prediction report
+          content:
+            application/json:
+              schema:
+                type: string
+
+  /machinelearning/features:
+    post:
+      tags: [MachineLearning]
+      summary: Calculate feature vectors
+      operationId: calculateFeatureVector
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                fingerprints:
+                  type: string
+                  description: JSON array of fingerprint configurations
+      responses:
+        '201':
+          description: Feature calculation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /machinelearning/features/{id}/status:
+    get:
+      tags: [MachineLearning]
+      summary: Get feature calculation status
+      operationId: getFeatureStatus
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+      responses:
+        '200':
+          description: Feature calculation complete
+        '202':
+          description: Feature calculation in progress
+        '400':
+          description: Feature calculation failed
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /machinelearning/features/{id}/download:
+    get:
+      tags: [MachineLearning]
+      summary: Download feature vectors as CSV
+      operationId: downloadFeatures
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+      responses:
+        '200':
+          description: CSV file
+          content:
+            application/csv:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Feature calculation failed
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /machinelearning/features/{id}/preview:
+    get:
+      tags: [MachineLearning]
+      summary: Preview feature vectors
+      operationId: previewFeatures
+      parameters:
+        - $ref: '#/components/parameters/EntityId'
+        - name: start
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: count
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: columns
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: CSV preview
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Feature calculation failed
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: /.well-known/openid-configuration
+
+  parameters:
+    NodeId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Node ID
+
+    EntityId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Entity ID
+
+    EntityType:
+      name: type
+      in: path
+      required: true
+      schema:
+        type: string
+        enum: [files, folders, records, users, models]
+      description: Entity type
+
+    Filter:
+      name: $filter
+      in: query
+      schema:
+        type: string
+      description: OData-style filter expression (e.g., "subType eq 'Model' and status eq 'Processing'")
+
+    PageNumber:
+      name: pageNumber
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      description: Page number (1-based)
+
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Page size
+
+    Projection:
+      name: $projection
+      in: query
+      schema:
+        type: string
+      description: Comma-separated list of fields to include
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    # ============== COMMON SCHEMAS ==============
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [UP, DOWN]
+        checks:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              status:
+                type: string
+
+    VersionInfo:
+      type: object
+      properties:
+        version:
+          type: string
+        buildDate:
+          type: string
+          format: date-time
+        gitCommit:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        traceId:
+          type: string
+
+    PaginationMetadata:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+        totalPages:
+          type: integer
+        hasPreviousPage:
+          type: boolean
+        hasNextPage:
+          type: boolean
+
+    JsonPatch:
+      type: array
+      items:
+        type: object
+        properties:
+          op:
+            type: string
+            enum: [add, remove, replace, move, copy, test]
+          path:
+            type: string
+          value: {}
+          from:
+            type: string
+
+    # ============== NODE SCHEMAS ==============
+    Node:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        status:
+          type: string
+        type:
+          type: string
+          enum: [User, Folder, File, Record, Model]
+        subType:
+          type: string
+        createdDateTime:
+          type: string
+          format: date-time
+        updatedDateTime:
+          type: string
+          format: date-time
+        name:
+          type: string
+        ownedBy:
+          type: string
+          format: uuid
+        createdBy:
+          type: string
+          format: uuid
+        updatedBy:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+        blob:
+          $ref: '#/components/schemas/Blob'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        totalRecords:
+          type: integer
+        accessPermissions:
+          $ref: '#/components/schemas/AccessPermissions'
+
+    PagedNodes:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
+
+    SetCurrentNodeRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+
+    Blob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bucket:
+          type: string
+        length:
+          type: integer
+          format: int64
+        md5:
+          type: string
+        contentType:
+          type: string
+
+    Image:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bucket:
+          type: string
+        height:
+          type: integer
+        width:
+          type: integer
+        mimeType:
+          type: string
+        scale:
+          type: string
+
+    AccessPermissions:
+      type: object
+      properties:
+        isPublic:
+          type: boolean
+        users:
+          type: array
+          items:
+            type: string
+            format: uuid
+        groups:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    # ============== ENTITY SCHEMAS ==============
+    Entity:
+      type: object
+      additionalProperties: true
+
+    PagedEntities:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entity'
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
+
+    StreamEvent:
+      type: object
+      properties:
+        event:
+          type: object
+        namespace:
+          type: string
+        name:
+          type: string
+
+    CreateFolderRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        parentId:
+          type: string
+          format: uuid
+
+    # ============== USER SCHEMAS ==============
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        loginName:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar:
+          type: string
+        createdDateTime:
+          type: string
+          format: date-time
+        updatedDateTime:
+          type: string
+          format: date-time
+
+    UserPublicInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        avatar:
+          type: string
+
+    CreateOrUpdateUserRequest:
+      type: object
+      properties:
+        displayName:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        loginName:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar:
+          type: string
+
+    # ============== EXPORT SCHEMAS ==============
+    ExportFileRequest:
+      type: object
+      required: [blobId, format, properties]
+      properties:
+        blobId:
+          type: string
+          format: uuid
+        format:
+          type: string
+          enum: [sdf, csv, mol]
+        properties:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              exportName:
+                type: string
+
+    # ============== MACHINE LEARNING SCHEMAS ==============
+    CreateModelRequest:
+      type: object
+      required: [targetFolderId, sourceBlobId, sourceBucket, userId, methods, trainingParameter]
+      properties:
+        targetFolderId:
+          type: string
+          format: uuid
+        sourceBlobId:
+          type: string
+          format: uuid
+        sourceBucket:
+          type: string
+        userId:
+          type: string
+          format: uuid
+        sourceFileName:
+          type: string
+        scaler:
+          type: string
+        methods:
+          type: array
+          items:
+            type: string
+        trainingParameter:
+          type: string
+        subSampleSize:
+          type: number
+        testDataSize:
+          type: number
+        kFold:
+          type: integer
+        fingerprints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fingerprint'
+        optimize:
+          type: boolean
+        hyperParameters:
+          type: object
+        dnnLayers:
+          type: integer
+        dnnNeurons:
+          type: integer
+
+    Fingerprint:
+      type: object
+      properties:
+        type:
+          type: string
+        size:
+          type: integer
+        radius:
+          type: integer
+
+    TrainingResponse:
+      type: object
+      properties:
+        modelFolderId:
+          type: string
+          format: uuid
+        correlationId:
+          type: string
+          format: uuid
+
+    RunDatasetPredictionRequest:
+      type: object
+      required: [targetFolderId, datasetBlobId, datasetBucket, modelBlobId, modelBucket, userId]
+      properties:
+        targetFolderId:
+          type: string
+          format: uuid
+        datasetBlobId:
+          type: string
+          format: uuid
+        datasetBucket:
+          type: string
+        modelBlobId:
+          type: string
+          format: uuid
+        modelBucket:
+          type: string
+        userId:
+          type: string
+          format: uuid
+
+    RunStructurePredictionRequest:
+      type: object
+      required: [structure, format, propertyName, modelIds]
+      properties:
+        structure:
+          type: string
+          description: MOL block or SMILES string
+        format:
+          type: string
+          enum: [MOL, SMILES]
+        propertyName:
+          type: string
+        modelIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    PredictionResponse:
+      type: object
+      properties:
+        modelFolderId:
+          type: string
+          format: uuid
+        correlationId:
+          type: string
+          format: uuid
+
+    PredictionStatus:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [CALCULATING, COMPLETED, FAILED]
+

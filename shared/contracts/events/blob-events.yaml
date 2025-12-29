@@ -1,0 +1,101 @@
+asyncapi: 3.0.0
+info:
+  title: Blob Storage Events
+  version: 1.0.0
+  description: |
+    Event contracts for the Blob Storage service.
+    Events are published when blobs are uploaded to the storage system.
+
+channels:
+  blob-loaded-events:
+    description: Events published when blobs are uploaded
+    messages:
+      BlobLoadedEvent:
+        $ref: '#/components/messages/BlobLoadedEvent'
+
+operations:
+  publishBlobLoaded:
+    action: send
+    channel:
+      $ref: '#/channels/blob-loaded-events'
+    title: Publish BlobLoaded event
+    description: Service publishes event when a blob is successfully uploaded
+
+components:
+  messages:
+    BlobLoadedEvent:
+      name: BlobLoadedEvent
+      title: Blob Loaded Event
+      summary: Event published when a blob is successfully uploaded to storage
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/BlobLoadedEvent'
+
+  schemas:
+    BlobLoadedEvent:
+      type: object
+      required:
+        - blobInfo
+        - timestamp
+      properties:
+        blobInfo:
+          $ref: '#/components/schemas/LoadedBlobInfo'
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+          example: "2025-01-15T10:30:00Z"
+
+    LoadedBlobInfo:
+      type: object
+      required:
+        - id
+        - fileName
+        - length
+        - uploadDateTime
+        - md5
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Blob identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        fileName:
+          type: string
+          description: Original file name
+          example: "molecule.mol"
+        length:
+          type: integer
+          format: int64
+          description: File size in bytes
+          example: 1024
+        userId:
+          type: string
+          format: uuid
+          description: User ID who uploaded the file
+          nullable: true
+          example: "770e8400-e29b-41d4-a716-446655440002"
+        uploadDateTime:
+          type: string
+          format: date-time
+          description: Upload timestamp (ISO 8601)
+          example: "2025-01-15T10:30:00Z"
+        md5:
+          type: string
+          description: MD5 checksum of the file
+          example: "5d41402abc4b2a76b9719d911017c592"
+        bucket:
+          type: string
+          description: Storage bucket identifier
+          nullable: true
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        metadata:
+          type: object
+          description: Custom metadata key-value pairs
+          additionalProperties:
+            type: object
+          nullable: true
+          example:
+            source: "upload"
+            category: "chemical"
+

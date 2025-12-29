@@ -1,0 +1,79 @@
+---
+description: Workspace organization and temporary artifacts management
+globs: ["**/*"]
+alwaysApply: true
+---
+
+Workspace organization standards for Leanda.io:
+
+## Archive Folder Structure
+- Save ALL temporary/exploratory scripts to `.archive/` folder (gitignored)
+- Use `.archive/scripts/` for one-off utility scripts (migrate-*, analyze-*, fix-*, explore-*)
+- Use `.archive/reports/` for in-progress markdown reports and analysis
+- Use `.archive/notebooks/` for exploratory Jupyter notebooks
+- Use `.archive/experiments/` for ML experiments and prototypes
+- Use `.archive/migrations/` for one-time data migration scripts
+
+## Naming Conventions
+- Prefix WIP reports with date: `YYYY-MM-DD-report-name.md`
+  - Example: `2025-01-15-cost-analysis.md`
+  - Example: `2025-01-15-migration-plan.md`
+- Prefix temp scripts with purpose: `migrate-*`, `analyze-*`, `fix-*`, `explore-*`
+  - Example: `migrate-mongodb-to-docdb.py`
+  - Example: `analyze-s3-costs.py`
+  - Example: `fix-data-quality-issues.py`
+- Include author initials for team attribution: `2025-01-15-rz-cost-analysis.md`
+- Add `_DRAFT` suffix for incomplete documents: `architecture-proposal_DRAFT.md`
+
+## Archive Lifecycle
+- Review `.archive/` contents monthly for promotion or deletion
+- Promote valuable scripts to proper `src/` locations with tests
+- Promote finalized reports to `docs/` with proper formatting
+- Delete obsolete artifacts older than 90 days
+- Never reference `.archive/` files from production code
+
+## In-Progress Reports
+- Create analysis reports in `.archive/reports/` while researching
+- Use clear headers: `## Status`, `## Findings`, `## Next Steps`, `## Open Questions`
+- Move to `docs/` only when complete and reviewed
+- Include data sources and methodology for reproducibility
+- Document assumptions and limitations
+
+## Temporary Scripts
+- Add shebang and docstring explaining purpose:
+  ```python
+  #!/usr/bin/env python3
+  """
+  One-time script to migrate MongoDB data to DocumentDB.
+  
+  Usage: python migrate-mongodb-to-docdb.py --source-uri <uri> --target-uri <uri>
+  """
+  ```
+- Include cleanup instructions if script modifies data
+- Never commit credentials even in archived scripts (use environment variables)
+- Mark destructive operations clearly with warnings:
+  ```python
+  # WARNING: This script will DELETE data. Review carefully before running.
+  ```
+- Add dry-run mode for destructive operations
+
+## Notebook Organization
+- Use Jupyter notebooks in `.archive/notebooks/` for exploratory analysis
+- Clear outputs before committing (if notebook is promoted to docs)
+- Include markdown cells explaining methodology and findings
+- Document data sources and assumptions
+- Convert to scripts or reports when analysis is complete
+
+## Migration Scripts
+- Store one-time migration scripts in `.archive/migrations/`
+- Include rollback instructions in script comments
+- Test migrations on staging environment first
+- Document migration steps and expected downtime
+- Archive successful migrations (don't delete, mark as completed)
+
+## Best Practices
+- Never commit `.archive/` contents to version control (gitignored)
+- Use `.archive/` for work-in-progress, not for permanent documentation
+- Promote valuable content to proper locations (src/, docs/) when ready
+- Review and clean up `.archive/` regularly (monthly review)
+- Document archive conventions in `.archive/README.md`

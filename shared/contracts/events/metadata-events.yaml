@@ -1,0 +1,123 @@
+asyncapi: 2.6.0
+info:
+  title: Metadata Processing Events
+  version: 1.0.0
+  description: |
+    Events published by the Metadata Processing service.
+    
+    This service generates metadata infoboxes and entity metadata from parsed file fields.
+    It consumes GenerateMetadata commands and publishes events when metadata is generated.
+  contact:
+    name: Leanda.io Team
+    email: support@leanda.io
+
+servers:
+  development:
+    url: localhost:9092
+    protocol: kafka
+    description: Local Kafka broker for development
+  production:
+    url: ${KAFKA_BOOTSTRAP_SERVERS}
+    protocol: kafka
+    description: Production Kafka cluster
+
+channels:
+  metadata-generate-commands:
+    description: Commands to generate metadata for files
+    subscribe:
+      operationId: receiveGenerateMetadataCommand
+      message:
+        $ref: '#/components/messages/GenerateMetadataCommand'
+
+  metadata-events:
+    description: Events published after metadata generation
+    publish:
+      operationId: publishMetadataEvent
+      message:
+        oneOf:
+          - $ref: '#/components/messages/MetadataGeneratedEvent'
+          - $ref: '#/components/messages/MetadataGenerationFailedEvent'
+
+components:
+  messages:
+    GenerateMetadataCommand:
+      name: GenerateMetadataCommand
+      title: Generate Metadata Command
+      summary: Command to trigger metadata generation for a file
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - fileId
+        properties:
+          fileId:
+            type: string
+            format: uuid
+            description: The ID of the file to generate metadata for
+          correlationId:
+            type: string
+            format: uuid
+            description: Correlation ID for tracing
+
+    MetadataGeneratedEvent:
+      name: MetadataGeneratedEvent
+      title: Metadata Generated Event
+      summary: Event published when metadata has been successfully generated
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+          - fileId
+          - timestamp
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: Unique event ID
+          fileId:
+            type: string
+            format: uuid
+            description: The ID of the file
+          correlationId:
+            type: string
+            format: uuid
+            description: Correlation ID for tracing
+          timestamp:
+            type: string
+            format: date-time
+            description: When the event was generated
+
+    MetadataGenerationFailedEvent:
+      name: MetadataGenerationFailedEvent
+      title: Metadata Generation Failed Event
+      summary: Event published when metadata generation fails
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - id
+          - fileId
+          - errorMessage
+          - timestamp
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: Unique event ID
+          fileId:
+            type: string
+            format: uuid
+            description: The ID of the file
+          correlationId:
+            type: string
+            format: uuid
+            description: Correlation ID for tracing
+          errorMessage:
+            type: string
+            description: Error message describing what went wrong
+          timestamp:
+            type: string
+            format: date-time
+            description: When the event was generated
+

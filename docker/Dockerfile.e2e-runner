@@ -1,0 +1,14 @@
+# E2E Test Runner Dockerfile
+# Used for running Playwright E2E tests in Docker
+
+FROM mcr.microsoft.com/playwright:v1.48.0-jammy
+
+# Set working directory
+WORKDIR /workspace
+
+# Set npm cache directory
+ENV NPM_CONFIG_CACHE=/root/.npm
+
+# Default command
+CMD ["npm", "--version"]
+
