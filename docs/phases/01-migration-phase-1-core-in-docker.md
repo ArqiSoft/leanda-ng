@@ -715,6 +715,6 @@ services:
 ## References
 
 - [Leanda NG Plan](../05-leanda-ng-plan.md)
-- [Local Docker Development Plan](../../leanda-ng/docker/README.md)
-- [Leanda Lite Configuration](../../configuration/leanda-lite/readme.md)
+- [Local Docker Development Plan](../../docker/README.md)
+- Leanda Lite Configuration (external; not in this repo)
 

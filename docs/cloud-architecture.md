@@ -526,7 +526,7 @@ scaleOutCooldown: 60s
 
 ## Security Architecture
 
-See [Security Architecture Document](./security-architecture.md) (to be created by PROD-4)
+See [Security Architecture Document](./security/security-architecture.md) (to be created by PROD-4)
 
 **Key Components**:
 - Amazon Cognito for authentication
@@ -540,7 +540,7 @@ See [Security Architecture Document](./security-architecture.md) (to be created 
 
 ## Cost Optimization
 
-See [Cost Optimization Document](./cost-optimization.md) (to be created by PROD-5)
+See [Cost Optimization Document](./finops/README.md) (to be created by PROD-5)
 
 **Key Strategies**:
 - Resource tagging for cost allocation
@@ -643,6 +643,6 @@ See [Architecture Diagrams](./architecture-diagrams.md) for detailed visual repr
 - [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
 - [Architecture Decision Records](./adr/)
 - [Architecture Diagrams](./architecture-diagrams.md)
-- [Service Documentation](../services/)
+- Service documentation (planned structure: see [README](../README.md) or [COORDINATION](./agents/COORDINATION.md))
 - [Infrastructure Code](../infrastructure/)
 

@@ -107,11 +107,11 @@ This infrastructure implements comprehensive security controls following AWS Wel
 
 Comprehensive security documentation is available in `docs/security/`:
 
-- **[Security Architecture](./docs/security/security-architecture.md)** - Complete security architecture overview
-- **[Secrets Management](./docs/security/secrets-management.md)** - Secrets Manager and Parameter Store usage
-- **[CloudTrail Configuration](./docs/security/cloudtrail-configuration.md)** - Audit logging setup
-- **[Security Runbooks](./docs/security/security-runbooks.md)** - Incident response and breach procedures
-- **[Compliance Framework](./docs/security/compliance-framework.md)** - GDPR and scientific data compliance
+- **[Security Architecture](../docs/security/security-architecture.md)** - Complete security architecture overview
+- **[Secrets Management](../docs/security/secrets-management.md)** - Secrets Manager and Parameter Store usage
+- **[CloudTrail Configuration](../docs/security/cloudtrail-configuration.md)** - Audit logging setup
+- **[Security Runbooks](../docs/security/security-runbooks.md)** - Incident response and breach procedures
+- **[Compliance Framework](../docs/security/compliance-framework.md)** - GDPR and scientific data compliance
 
 ## Stack Dependencies
 

@@ -265,7 +265,7 @@ See [Compliance Framework](./compliance-framework.md) for:
 - [AWS Well-Architected Framework - Security Pillar](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html)
 - [AWS Security Best Practices](https://aws.amazon.com/architecture/security-identity-compliance/)
 - [GDPR Compliance Guide](https://gdpr.eu/)
-- [SOC 2 Type II Compliance](./soc2-type2-compliance.md)
+- SOC 2 Type II compliance (see [ADR 0010](../adr/0010-soc2-type2-compliance-strategy.md); compliance docs to be added)
 - [SOC 2 Trust Service Criteria](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/aicpasoc2report.html)
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 

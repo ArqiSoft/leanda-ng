@@ -57,7 +57,7 @@ This directory contains scripts for autonomous testing and troubleshooting. The 
 
 ## Usage
 
-See [Autonomous Testing Runbook](../../docs/testing/autonomous-testing-runbook.md) for complete documentation.
+See [Autonomous Testing Runbook](../../docs/testing/README.md) for complete documentation.
 
 ## Quick Start
 
@@ -76,6 +76,6 @@ Results are stored in `docs/testing/autonomous-runs/[run-id]/`
 ---
 
 **See Also**:
-- [Autonomous Testing Runbook](../../docs/testing/autonomous-testing-runbook.md)
-- [Testing Strategy](../../docs/testing/testing-strategy.md)
+- [Autonomous Testing Runbook](../../docs/testing/README.md)
+- [Testing Strategy](../../docs/testing/README.md)
 

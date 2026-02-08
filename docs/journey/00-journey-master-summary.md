@@ -15,8 +15,8 @@ What started as a weekend hobby project (“what if I just modernize this entire
 - **Week 1** — Discovery weekend: what Leanda.io is, legacy stack, “92% complete” claim, multi-agent setup, tech stack summary. See [01-journey-week-1.md](01-journey-week-1.md) and [02-journey-week-1-report.md](02-journey-week-1-report.md).
 - **Week 2** — Reality check: unit tests failing, services not compiling; “92% was bogus”; Claude Code token limit; Cursor reported success while code didn’t compile; “pre-existing” excuses; Cursor removed functionality to make Docker build succeed. See [03-journey-week-2.md](03-journey-week-2.md) and [04-journey-week-2-testing-gaps.md](04-journey-week-2-testing-gaps.md).
 - **Week 3** — Front-end finally up; old vs new home page; E2E tests are mocks that call APIs, not full UI flows; Codex/Claude helped where Cursor Auto failed. Gap analysis: front-end ~22% complete. See [05-jorney-week-3.md](05-jorney-week-3.md), [06-jorney-week-3-front-end-gaps.md](06-jorney-week-3-front-end-gaps.md), and screenshots 07–08.
-- **Week 4** — Docker on Mac issues; adding E2E tests; Cursor “incredibly stubborn” ignoring rules; mock auth for testing. See [09-journey-week-4.md](09-journey-week-4.md) and 10 (LOC image).
-- **Week 5** — Cursor “got dumber” (Composer); context loss; Opus 4.5 worked; lesson: AI providers can change behavior anytime—guardrails needed; DynamoDB/S3 migration decided. See [11-journey-week-5.md](11-journey-week-5.md) and 12 (image).
+- **Week 4** — Docker on Mac issues; adding E2E tests; Cursor “incredibly stubborn” ignoring rules; mock auth for testing. See [09-journey-week-4.md](09-journey-week-4.md) and [10-journey-week-4-loc.png](10-journey-week-4-loc.png) (LOC).
+- **Week 5** — Cursor “got dumber” (Composer); context loss; Opus 4.5 worked; lesson: AI providers can change behavior anytime—guardrails needed; DynamoDB/S3 migration decided. See [11-journey-week-5.md](11-journey-week-5.md) and [12-journey-week-5.png](12-journey-week-5.png).
 
 **Narrative arc:** Week 1 = optimism and “92% done”; Week 2 = compile/test reality and tool limits; Week 3 = front-end visible but gaps and E2E are mocks; Week 4 = Docker + E2E + Cursor ignoring rules; Week 5 = model behavior change and DynamoDB/S3 decision.
 
@@ -28,7 +28,7 @@ What started as a weekend hobby project (“what if I just modernize this entire
 - **Front-end running** — New Angular 21 app up; old vs new home page captured (05, 07–08).
 - **Codex/Claude for UI** — More useful than Cursor Auto for migrating visuals (05).
 - **Opus 4.5** — Switching model restored useful behavior when default Composer regressed (11).
-- **Testing infrastructure** — Integration test base, workflow tests (BlobStorage, ChemicalParsing, OfficeProcessor, Indexing), root-cause doc [EC2_MINIMAL_ROOT_CAUSES.md](../testing/EC2_MINIMAL_ROOT_CAUSES.md), E2E phases and Playwright config.
+- **Testing infrastructure** — Integration test base, workflow tests (BlobStorage, ChemicalParsing, OfficeProcessor, Indexing), root-cause doc [EC2 minimal root causes](../testing/README.md), E2E phases and Playwright config.
 - **DynamoDB/S3 decision** — Enough contract, unit, integration and E2E coverage to justify migrating metadata to DynamoDB and blobs to S3/MinIO (11).
 - **Gap clarity** — Front-end gap analysis (22% complete) and UI engineer plan give a realistic roadmap (06, [docs/frontend/](../frontend/)).
 - **Auth for tests** — Mock auth and backend auth configuration for testing (docs/testing).
@@ -42,7 +42,7 @@ What started as a weekend hobby project (“what if I just modernize this entire
 - **Cursor behavior** — Reported success while tests failed; labeled remaining issues “pre-existing”; removed functionality to get Docker build to succeed (03); ignored rules (09); default Composer “got dumber” over time (11).
 - **Claude Code** — Hit token limit after ~45 min on codebase analysis (03).
 - **Front-end** — Only ~22% complete; E2E tests are API-driven mocks using the UI, not full UI flows (03, 06).
-- **Operational issues** — Docker on Mac (09); EC2/minimal distribution issues (RocksDB/Alpine, missing topics, JARs, .git, health timing, event payloads) documented in [EC2_MINIMAL_ROOT_CAUSES.md](../testing/EC2_MINIMAL_ROOT_CAUSES.md).
+- **Operational issues** — Docker on Mac (09); EC2/minimal distribution issues (RocksDB/Alpine, missing topics, JARs, .git, health timing, event payloads) documented in [EC2 minimal root causes](../testing/README.md).
 
 ---
 
@@ -54,7 +54,7 @@ The first public post is **[Leanda.io NextGen - can we build an enterprise platf
 
 Repo link for progress: [https://github.com/ArqiSoft/leanda-ng](https://github.com/ArqiSoft/leanda-ng).
 
-The continuation document ([14-journey-continuation-after-week-5.md](14-journey-continuation-after-week-5.md)) picks up from that framing and summarizes what actually happened in Weeks 2–5. A Substack-ready version (same content, tone adjusted for the blog) is in [14-journey-continuation-after-week-5-substack.md](14-journey-continuation-after-week-5-substack.md).
+The continuation document ([14-journey-continuation-after-week-5.md](14-journey-continuation-after-week-5.md)) picks up from that framing and summarizes what actually happened in Weeks 2–5. A Substack-ready version (same content, tone adjusted for the blog) may be added as `14-journey-continuation-after-week-5-substack.md`.
 
 ---
 
@@ -65,7 +65,6 @@ The continuation document ([14-journey-continuation-after-week-5.md](14-journey-
 
 **Key testing / architecture docs:**
 
-- [docs/testing/EC2_MINIMAL_ROOT_CAUSES.md](../testing/EC2_MINIMAL_ROOT_CAUSES.md)  
-- [docs/testing/TESTING_STRATEGY.md](../testing/TESTING_STRATEGY.md)  
-- [docs/frontend/UI_ENGINEER_IMPLEMENTATION_PLAN.md](../frontend/UI_ENGINEER_IMPLEMENTATION_PLAN.md) (and frontend gap analysis)  
+- [docs/testing/README.md](../testing/README.md)
+- [docs/frontend/UI_ENGINEER_IMPLEMENTATION_PLAN.md](../frontend/UI_ENGINEER_IMPLEMENTATION_PLAN.md) (and frontend gap analysis)
 - [docs/agents/COORDINATION.md](../agents/COORDINATION.md)

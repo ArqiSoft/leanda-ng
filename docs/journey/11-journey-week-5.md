@@ -25,3 +25,7 @@ Switching to Opus 4.5 worked perfectly. Now the question is - how do I know what
 Since we still used Mongo for everything, I decided we have enough contract, unit, integration and e2e tests to finally migrate to DynamoDB for metadata and S3/Minio for the blob storage.
 
 That was relatively easy since the system know almost all of the specs.
+
+## Week 5
+
+![Week 5](12-journey-week-5.png)

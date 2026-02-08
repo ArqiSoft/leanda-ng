@@ -361,11 +361,7 @@ SOC 2 Type II compliance is being implemented by Agent PROD-7 (Compliance & SOC 
 
 ### Related Documentation
 
-- [SOC 2 Type II Compliance Framework](./soc2-type2-compliance.md) - Comprehensive SOC 2 compliance documentation
-- [SOC 2 Control Matrix](./soc2-control-matrix.md) - Control mapping matrix
-- [SOC 2 Evidence Requirements](./soc2-evidence-requirements.md) - Evidence collection requirements
-- [SOC 2 Audit Preparation](./soc2-audit-preparation.md) - Audit preparation guide
-- [ADR 0010: SOC 2 Type II Compliance Strategy](../adr/0010-soc2-type2-compliance-strategy.md) - Architecture decision record
+- [ADR 0010: SOC 2 Type II Compliance Strategy](../adr/0010-soc2-type2-compliance-strategy.md) - Architecture decision record (SOC 2 compliance framework, control matrix, evidence requirements, and audit preparation docs to be added)
 
 ## References
 

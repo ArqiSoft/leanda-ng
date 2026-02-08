@@ -336,7 +336,7 @@ This document references the following visual artifacts:
 - [Architecture Diagrams](../architecture-diagrams.md)
 - [Architecture Decision Records](../adr/)
 - [AWS Well-Architected Framework Review](../cloud-architecture.md#aws-well-architected-framework-review)
-- [Service Documentation](../../services/)
+- Service documentation (planned structure: see [README](../../README.md) or [COORDINATION](../../docs/agents/COORDINATION.md))
 - [Infrastructure Code](../../infrastructure/)
 
 ---

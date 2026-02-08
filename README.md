@@ -37,6 +37,8 @@ Infrastructure is designed, documentation is comprehensive, and contracts are de
 
 See [Project Summary Report](./docs/journey/01-journey-week-1-report.md) for detailed progress.
 
+**Journey:** A single narrative from Week 1 through Week 5—discovery, reality check, front-end progress, tool limits, and the DynamoDB/S3 decision—is in the [Journey Master Summary](./docs/journey/00-journey-master-summary.md). It summarizes wins, lessons, and links to all journey docs and images.
+
 ## Repository Structure
 
 ### Current (what exists)
@@ -106,6 +108,7 @@ See the [Development Journey](./docs/journey/01-journey-week-1.md) for progress 
 - **[Architecture Overview](./docs/architecture.md)** - Project structure and design
 - **[Modernization Plan](./docs/02-modernization-plan.md)** - Migration strategy
 - **[Engineering Strategy](./docs/04-modernization-engineering-strategy.md)** - Lakehouse approach
+- **[Journey Master Summary](./docs/journey/00-journey-master-summary.md)** - Week 1–5 narrative, wins, lessons, and links to all journey docs
 - **[Development Journey](./docs/journey/01-journey-week-1.md)** - Progress logs
 - **[Phase Documentation](./docs/phases/)** - Migration phase details
 - **[Infrastructure (CDK)](./infrastructure/README.md)** - Stacks and deployment
