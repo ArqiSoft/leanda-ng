@@ -106,14 +106,14 @@ The platform follows a **serverless-first, event-driven microservices architectu
 - Basic observability (CloudWatch)
 
 ⚠️ **Gaps**:
-- No automated deployment pipelines
+- No automated deployment pipelines (CI/CD postponed until full migration is complete)
 - Limited runbooks and operational procedures
 - No automated testing in production-like environments
 - Limited incident response procedures
 
 #### Recommendations
 
-1. **CI/CD Pipeline** (Coordinate with PROD-2)
+1. **CI/CD Pipeline** (Coordinate with PROD-2) — **CI/CD is postponed until full migration is complete.**
    - GitHub Actions → AWS CodePipeline
    - Automated testing (unit, integration, E2E)
    - Automated deployment to dev/staging/prod
@@ -631,7 +631,7 @@ See [Architecture Diagrams](./architecture-diagrams.md) for detailed visual repr
 2. ✅ ADRs created for major decisions
 3. ✅ Architecture diagrams created
 4. ⏳ PROD-1: Implement CDK stacks with enhancements
-5. ⏳ PROD-2: Create CI/CD pipelines
+5. ⏳ PROD-2: CI/CD postponed until full migration is complete
 6. ⏳ PROD-3: Set up monitoring and alerting
 7. ⏳ PROD-4: Implement security architecture
 8. ⏳ PROD-5: Implement cost optimization strategies

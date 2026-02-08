@@ -1,0 +1,184 @@
+asyncapi: '2.6.0'
+info:
+  title: File Processing Saga Events
+  version: '1.0.0'
+  description: |
+    AsyncAPI specification for file processing saga orchestration.
+    Defines saga-level events and correlation for Generic, Chemical, Office,
+    and other file processing workflows. CorrelationId propagates through all messages.
+
+servers:
+  kafka:
+    url: localhost:9092
+    protocol: kafka
+    description: Kafka broker for saga events
+
+channels:
+  file-processing-started:
+    description: Saga started for a file (orchestrator consumes to track)
+    subscribe:
+      message:
+        $ref: '#/components/messages/FileProcessingStarted'
+  file-processing-completed:
+    description: File processing saga completed successfully
+    subscribe:
+      message:
+        $ref: '#/components/messages/FileProcessingCompleted'
+  file-processing-failed:
+    description: File processing saga failed; compensation may be triggered
+    subscribe:
+      message:
+        $ref: '#/components/messages/FileProcessingFailed'
+  file-processing-compensated:
+    description: Compensation completed for a failed/cancelled file processing
+    subscribe:
+      message:
+        $ref: '#/components/messages/FileProcessingCompensated'
+
+components:
+  messages:
+    FileProcessingStarted:
+      name: FileProcessingStarted
+      title: File Processing Started
+      summary: Emitted when orchestrator starts a file processing workflow
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileProcessingStarted'
+    FileProcessingCompleted:
+      name: FileProcessingCompleted
+      title: File Processing Completed
+      summary: Emitted when all steps for a file processing workflow succeed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileProcessingCompleted'
+    FileProcessingFailed:
+      name: FileProcessingFailed
+      title: File Processing Failed
+      summary: Emitted when file processing fails; compensation may run
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileProcessingFailed'
+    FileProcessingCompensated:
+      name: FileProcessingCompensated
+      title: File Processing Compensated
+      summary: Emitted when compensation for a file processing saga completes
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/FileProcessingCompensated'
+
+  schemas:
+    FileProcessingStarted:
+      type: object
+      required:
+        - CorrelationId
+        - FileId
+        - WorkflowType
+        - UserId
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID for saga orchestration (propagate to all steps)
+        FileId:
+          type: string
+          format: uuid
+          description: File/node ID
+        BlobId:
+          type: string
+          format: uuid
+          description: Blob storage ID (optional at start)
+        Bucket:
+          type: string
+          description: Storage bucket name
+        WorkflowType:
+          type: string
+          enum: [Generic, Chemical, Office, Crystal, Reaction, Spectrum, WebPage, Microscopy]
+          description: Type of file processing workflow
+        UserId:
+          type: string
+          format: uuid
+          description: User who initiated the workflow
+        TimeStamp:
+          type: string
+          format: date-time
+          description: Event timestamp (ISO 8601)
+
+    FileProcessingCompleted:
+      type: object
+      required:
+        - CorrelationId
+        - FileId
+        - WorkflowType
+        - UserId
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        FileId:
+          type: string
+          format: uuid
+        WorkflowType:
+          type: string
+          enum: [Generic, Chemical, Office, Crystal, Reaction, Spectrum, WebPage, Microscopy]
+        UserId:
+          type: string
+          format: uuid
+        TimeStamp:
+          type: string
+          format: date-time
+
+    FileProcessingFailed:
+      type: object
+      required:
+        - CorrelationId
+        - FileId
+        - WorkflowType
+        - UserId
+        - Message
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        FileId:
+          type: string
+          format: uuid
+        WorkflowType:
+          type: string
+          enum: [Generic, Chemical, Office, Crystal, Reaction, Spectrum, WebPage, Microscopy]
+        UserId:
+          type: string
+          format: uuid
+        Message:
+          type: string
+          description: Error message or reason for failure
+        TimeStamp:
+          type: string
+          format: date-time
+
+    FileProcessingCompensated:
+      type: object
+      required:
+        - CorrelationId
+        - FileId
+        - WorkflowType
+        - UserId
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        FileId:
+          type: string
+          format: uuid
+        WorkflowType:
+          type: string
+          enum: [Generic, Chemical, Office, Crystal, Reaction, Spectrum, WebPage, Microscopy]
+        UserId:
+          type: string
+          format: uuid
+        TimeStamp:
+          type: string
+          format: date-time

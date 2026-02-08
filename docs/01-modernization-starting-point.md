@@ -28,7 +28,7 @@ The Leanda platform is a complex microservices-based scientific data management 
 
 - **Testing**: Protractor (deprecated), Cucumber
 
-- **CI/CD**: Travis CI (deprecated)
+- **CI/CD**: Travis CI (deprecated); CI/CD is postponed until full migration is complete
 
 ### Critical Issues Identified
 
@@ -189,7 +189,7 @@ The Leanda platform is a complex microservices-based scientific data management 
 
 - **Files**: All `docker-compose.yml` files and `Dockerfile` files
 
-### Phase 2: Testing & CI/CD Modernization (Months 4-5)
+### Phase 2: Testing & CI/CD Modernization (Months 4-5) — CI/CD postponed until full migration is complete
 
 **Priority: High - Improve development workflow**
 
@@ -208,7 +208,7 @@ The Leanda platform is a complex microservices-based scientific data management 
 
 - Add component testing for Angular
 
-#### 2.2 CI/CD Migration
+#### 2.2 CI/CD Migration (postponed until full migration is complete)
 
 - **Replace Travis CI** with GitHub Actions
 
@@ -384,7 +384,7 @@ The Leanda platform is a complex microservices-based scientific data management 
 
 - **Phase 1**: 3 months (Critical security updates)
 
-- **Phase 2**: 2 months (Testing and CI/CD)
+- **Phase 2**: 2 months (Testing and CI/CD; CI/CD postponed until full migration)
 
 - **Phase 3**: 3 months (Architecture improvements)
 

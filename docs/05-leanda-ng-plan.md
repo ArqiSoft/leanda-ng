@@ -519,7 +519,7 @@ leanda-ng/
 │   └── package.json
 ├── .github/
 │   └── workflows/
-│       └── deploy-infrastructure.yml # NEW: CI/CD with OIDC
+│       └── deploy-infrastructure.yml # NEW: CI/CD with OIDC (CI/CD postponed until full migration)
 ├── services/                 # Java/Quarkus microservices
 │   ├── core-api/
 │   ├── ingestion-service/
@@ -718,7 +718,7 @@ environments.forEach(env => {
 3. **`leanda-ng/ml-services/`** - Modernized Python ML services
 4. **`leanda-ng/frontend/`** - Angular 21 application
 5. **`docs/adr/`** - Architecture Decision Records
-6. **GitHub Actions** - CI/CD pipelines
+6. **GitHub Actions** - CI/CD pipelines (CI/CD postponed until full migration is complete)
 
 ---
 
@@ -745,4 +745,4 @@ Weeks 29-32: Phase 5 - Testing & deployment
 4. Create IAM stack in CDK
 5. Create networking stack (VPC, subnets, security groups)
 6. Create first Quarkus service scaffold (`core-api`)
-7. Set up GitHub Actions workflow with OIDC authentication
+7. Set up GitHub Actions workflow with OIDC authentication (CI/CD postponed until full migration)

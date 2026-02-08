@@ -1,0 +1,150 @@
+asyncapi: '2.6.0'
+info:
+  title: Record Processing Saga Events
+  version: '1.0.0'
+  description: |
+    AsyncAPI specification for record-level saga orchestration (Substance,
+    InvalidSubstance, Crystal, Reaction, Spectrum). Triggered by file
+    processing sagas per record. CorrelationId links to parent file saga.
+
+servers:
+  kafka:
+    url: localhost:9092
+    protocol: kafka
+    description: Kafka broker for saga events
+
+channels:
+  record-processing-started:
+    description: Record processing saga started
+    subscribe:
+      message:
+        $ref: '#/components/messages/RecordProcessingStarted'
+  record-processing-completed:
+    description: Record processing completed successfully
+    subscribe:
+      message:
+        $ref: '#/components/messages/RecordProcessingCompleted'
+  record-processing-failed:
+    description: Record processing failed
+    subscribe:
+      message:
+        $ref: '#/components/messages/RecordProcessingFailed'
+
+components:
+  messages:
+    RecordProcessingStarted:
+      name: RecordProcessingStarted
+      title: Record Processing Started
+      summary: Emitted when orchestrator starts processing a single record
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordProcessingStarted'
+    RecordProcessingCompleted:
+      name: RecordProcessingCompleted
+      title: Record Processing Completed
+      summary: Emitted when record processing succeeds
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordProcessingCompleted'
+    RecordProcessingFailed:
+      name: RecordProcessingFailed
+      title: Record Processing Failed
+      summary: Emitted when record processing fails
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/RecordProcessingFailed'
+
+  schemas:
+    RecordProcessingStarted:
+      type: object
+      required:
+        - CorrelationId
+        - RecordId
+        - FileId
+        - RecordType
+        - UserId
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+          description: Correlation ID (matches parent file saga or record saga)
+        RecordId:
+          type: string
+          format: uuid
+          description: Record ID
+        FileId:
+          type: string
+          format: uuid
+          description: Parent file ID
+        RecordType:
+          type: string
+          enum: [Substance, InvalidSubstance, Crystal, Reaction, Spectrum]
+          description: Type of record processing
+        UserId:
+          type: string
+          format: uuid
+        TimeStamp:
+          type: string
+          format: date-time
+
+    RecordProcessingCompleted:
+      type: object
+      required:
+        - CorrelationId
+        - RecordId
+        - FileId
+        - RecordType
+        - UserId
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        RecordId:
+          type: string
+          format: uuid
+        FileId:
+          type: string
+          format: uuid
+        RecordType:
+          type: string
+          enum: [Substance, InvalidSubstance, Crystal, Reaction, Spectrum]
+        UserId:
+          type: string
+          format: uuid
+        TimeStamp:
+          type: string
+          format: date-time
+
+    RecordProcessingFailed:
+      type: object
+      required:
+        - CorrelationId
+        - RecordId
+        - FileId
+        - RecordType
+        - UserId
+        - Message
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        RecordId:
+          type: string
+          format: uuid
+        FileId:
+          type: string
+          format: uuid
+        RecordType:
+          type: string
+          enum: [Substance, InvalidSubstance, Crystal, Reaction, Spectrum]
+        UserId:
+          type: string
+          format: uuid
+        Message:
+          type: string
+        TimeStamp:
+          type: string
+          format: date-time

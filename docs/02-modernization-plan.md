@@ -43,7 +43,7 @@ The provided modernization plan outlines a 12-month phased approach to mitigate 
 - **Critical Issues**: Security vulnerabilities from outdated dependencies (e.g., CVEs in Spring Boot RC1, EOL .NET Core 3.1/Angular 9/MongoDB 3.6); obsolescence (Protractor/Travis CI deprecated); inconsistent patterns; limited test coverage.
 - **Phased Strategy**:
   - Phase 1 (Months 1-3): Security-focused upgrades (.NET 8, Java 17/Spring Boot 3.1, Angular 17, database LTS versions).
-  - Phase 2 (Months 4-5): Testing (Playwright/Cypress) and CI/CD (GitHub Actions).
+  - Phase 2 (Months 4-5): Testing (Playwright/Cypress) and CI/CD (GitHub Actions; CI/CD postponed until full migration is complete).
   - Phase 3 (Months 6-8): Observability (OpenTelemetry), API enhancements (OpenAPI 3.0), dependency management.
   - Phase 4 (Months 9-10): Performance/scalability optimizations (caching, indexing).
   - Phase 5 (Months 11-12): Developer experience (Docker Compose, documentation).
@@ -65,7 +65,7 @@ Based on 2025 trends from AWS re:Invent, Gartner reports, and industry benchmark
 
 - **Languages/Frameworks**: .NET 10 LTS, Java 25 LTS, Angular 21 (zoneless, Signal Forms, AI tooling). Microservices favor Quarkus/Spring Boot 3.3+ for efficiency, FastAPI/PyTorch 3.0+ for ML.
 - **Databases**: MongoDB 8.2 (vector search), KurrentDB 25 (event sourcing), Redis 8.4. Trends: AI-integrated DBs for semantic queries in scientific data.
-- **Technologies**: Kafka over RabbitMQ; Keycloak 26+ for auth; Playwright for testing; GitHub Actions for CI/CD; OpenTelemetry for observability.
+- **Technologies**: Kafka over RabbitMQ; Keycloak 26+ for auth; Playwright for testing; GitHub Actions for CI/CD (CI/CD postponed until full migration); OpenTelemetry for observability.
 - **Cloud Trends**: AI/ML growth (LLMOps, agentic AI); serverless/edge computing; hybrid/multi-cloud to $723B market; FinOps/sustainability. For repositories: Embedded AI for curation, vector search, MLOps for model sharing.
 - **AWS-Specific**: Leads DSML (SageMaker/Bedrock); event-driven with data triggers (EventBridge); data lakes (S3/Glue/Athena); security (GuardDuty/Macie). 2025 updates: Bedrock AgentCore for life sciences, EMR enhancements for scientific computing.
 

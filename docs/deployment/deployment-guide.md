@@ -1,11 +1,11 @@
 # Deployment Guide
 
-This guide describes how to deploy Leanda.io services to AWS using GitHub Actions CI/CD pipelines.
+This guide describes how to deploy Leanda.io services to AWS using GitHub Actions CI/CD pipelines. **CI/CD is postponed until full migration is complete.**
 
 ## Overview
 
 The deployment process uses:
-- **GitHub Actions** for CI/CD automation
+- **GitHub Actions** for CI/CD automation (postponed until full migration)
 - **AWS CDK** for infrastructure as code
 - **OIDC** for secure AWS authentication
 - **Docker** for containerized services
@@ -178,7 +178,24 @@ npm run deploy
 cdk deploy leanda-ng-kms-staging
 ```
 
-### Deploy Java Service
+### ECR layout
+
+The Compute Stack creates **one ECR repository per environment**: `leanda-ng/<env>` (e.g. `leanda-ng/dev`, `leanda-ng/staging`). Images are tagged by service name and version, not by separate repos. Full image URI format: `{account}.dkr.ecr.{region}.amazonaws.com/leanda-ng/{env}/{service}:{tag}` (e.g. `core-api:minimal`, `core-api:20250202-abc123`).
+
+### Build and push minimal images
+
+The five minimal service images that work on EC2 (core-api, blob-storage, imaging, office-processor, indexing) can be built locally and pushed to ECR using the same Maven order and `Dockerfile.minimal` as the EC2 test runner. Use the script:
+
+```bash
+# From repo root. Requires: AWS CLI, Docker, Maven 3.9+, Java 21, Compute Stack deployed for target env.
+./scripts/build-and-push-minimal-ecr.sh --env=dev --region=us-east-1 --tag=minimal
+```
+
+- **Services**: core-api, blob-storage, imaging, office-processor, indexing.
+- **ECR URI**: Resolved from CloudFormation stack output `leanda-ng-compute-<env>` (EcrRepositoryUri), or set `ECR_URI` to override.
+- **Options**: `--env=dev|staging|production`, `--region=us-east-1`, `--tag=minimal|YYYYMMDD|sha`. Use an immutable tag (date or git SHA) for releases.
+
+### Deploy a single Java service (manual)
 
 ```bash
 cd services/core-api
@@ -186,23 +203,21 @@ cd services/core-api
 # Build and package
 mvn clean package -DskipTests
 
-# Build Docker image
-docker build -t leanda-ng-core-api:latest -f Dockerfile .
+# Build Docker image (use Dockerfile.minimal for minimal distro; Dockerfile for full)
+docker build -t leanda/core-api:minimal -f Dockerfile.minimal .
 
-# Tag for ECR
-docker tag leanda-ng-core-api:latest \
-  123456789012.dkr.ecr.us-east-1.amazonaws.com/leanda-ng-core-api:latest
+# Resolve ECR URI (or set ECR_URI); then tag and push to the single repo
+ECR_URI=$(aws cloudformation describe-stacks --stack-name leanda-ng-compute-dev --query "Stacks[0].Outputs[?OutputKey=='EcrRepositoryUri'].OutputValue" --output text --region us-east-1)
+docker tag leanda/core-api:minimal "$ECR_URI/core-api:minimal"
 
-# Push to ECR
 aws ecr get-login-password --region us-east-1 | \
-  docker login --username AWS --password-stdin \
-  123456789012.dkr.ecr.us-east-1.amazonaws.com
+  docker login --username AWS --password-stdin "${ECR_URI%%/*}"
 
-docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/leanda-ng-core-api:latest
+docker push "$ECR_URI/core-api:minimal"
 
 # Update ECS service (trigger new deployment)
 aws ecs update-service \
-  --cluster leanda-ng-staging \
+  --cluster leanda-ng-cluster-dev \
   --service core-api \
   --force-new-deployment
 ```

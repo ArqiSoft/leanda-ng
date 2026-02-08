@@ -47,7 +47,7 @@ The conversation reveals a system suffering from **severe technical debt** after
 - Extremely outdated stack (.NET Core 3.1, Java 8/Spring Boot RC1, Angular 9, MongoDB 3.6, EventStore 4.x, Redis 4)
 - Heavy polyglot fragmentation (C# core + Java parsers + Python ML)
 - 28 separate GitHub repositories with almost no activity since 2020–2021
-- No modern observability, CI/CD, testing, or security posture
+- No modern observability, CI/CD (CI/CD postponed until full migration), testing, or security posture
 - Classic microservices but with high operational burden and scaling limitations
 
 Previous proposals evolved from incremental modernization → full rewrite → AWS-native microservices → lakehouse thinking.

@@ -28,10 +28,10 @@ This report documents the comprehensive verification of all 11 Phase 2 services 
 **Notes**: Phase 1 service, verifying integration with Phase 2
 
 **Endpoints to Verify**:
-- `/api/v2/health` - Health check
-- `/api/v2/users/{id}` - Get user by ID
-- `/api/v2/nodes` - Get node list
-- `/api/v2/entities/{type}` - Get entities by type
+- `/api/v1/health` - Health check
+- `/api/v1/users/{id}` - Get user by ID
+- `/api/v1/nodes` - Get node list
+- `/api/v1/entities/{type}` - Get entities by type
 
 **Events to Verify**:
 - Domain events from `shared/specs/events/domain-events.yaml`
@@ -431,13 +431,13 @@ This report documents the comprehensive verification of all 11 Phase 2 services 
 | `/api/v1/users/{id}` | PUT | ✅ | `UsersResource.updateUser()` | ✅ Match |
 | `/api/v1/users/{id}` | DELETE | ✅ | `UsersResource.deleteUser()` | ✅ Match |
 
-**Note**: Core API uses `/api/v1/users` but contract specifies `/api/v2/users`. This is a version mismatch that should be addressed.
+**Note**: Core API uses `/api/v1/users` as the first major version (no legacy support needed).
 
 **Events to Verify**:
 - Domain events from `shared/specs/events/domain-events.yaml` - Service publishes UserCreated, UserUpdated, UserDeleted events
 
 **Issues**: 
-- ⚠️ **API Version Mismatch**: Implementation uses `/api/v1/users` but contract specifies `/api/v2/users`. Should align version.
+- ✅ **API Version**: Using `/api/v1/users` as the first major version (no legacy support needed).
 
 ---
 
@@ -571,7 +571,7 @@ This report documents the comprehensive verification of all 11 Phase 2 services 
 
 2. **API Version Mismatch**
    - **Service**: core-api
-   - **Issue**: Implementation uses `/api/v1/users` but contract specifies `/api/v2/users`
+   - ✅ **Resolved**: Using `/api/v1/users` as the first major version (contract and implementation aligned)
    - **Impact**: Medium - API version inconsistency
    - **Recommendation**: Align API version - either update implementation to v2 or update contract to v1
 
@@ -609,7 +609,7 @@ This report documents the comprehensive verification of all 11 Phase 2 services 
 ### 5.3 Long-term Improvements
 
 1. Add contract testing framework (e.g., Pact)
-2. Automate contract verification in CI/CD
+2. Automate contract verification in CI/CD (CI/CD postponed until full migration is complete)
 3. Add performance tests for critical paths
 4. Add chaos engineering tests
 

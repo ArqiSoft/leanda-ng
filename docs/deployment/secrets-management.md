@@ -5,7 +5,7 @@ This guide describes how to manage secrets and sensitive configuration for Leand
 ## Overview
 
 Leanda.io uses a multi-layered approach to secrets management:
-- **GitHub Secrets** for CI/CD pipeline secrets
+- **GitHub Secrets** for CI/CD pipeline secrets (CI/CD postponed until full migration is complete)
 - **AWS Secrets Manager** for runtime secrets
 - **AWS Systems Manager Parameter Store** for configuration parameters
 - **Environment Variables** for non-sensitive configuration

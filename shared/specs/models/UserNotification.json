@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leanda.io/schemas/UserNotification.json",
+  "title": "UserNotification",
+  "description": "User notification entity. Extracted from legacy UserNotificationsController and Sds.Osdr.Generic.Domain.UserNotification",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique notification identifier"
+    },
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who receives the notification"
+    },
+    "message": {
+      "type": "string",
+      "description": "Notification message content"
+    },
+    "isRead": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the notification has been read"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the notification was created"
+    },
+    "type": {
+      "type": "string",
+      "description": "Notification type (e.g., Info, Warning, Success)"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp (alias for timestamp)"
+    }
+  }
+}

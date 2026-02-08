@@ -181,7 +181,7 @@ Here's the complete rundown of what we're modernizing:
 **Testing & CI/CD:**
 
 - **Testing** - Currently Protractor (deprecated) → **Target: Playwright**
-- **CI/CD** - Currently Travis CI (shut down in 2023) → **Target: GitHub Actions**
+- **CI/CD** - Currently Travis CI (shut down in 2023) → **Target: GitHub Actions** (CI/CD postponed until full migration is complete)
 
 ### Repository Structure
 
@@ -251,7 +251,7 @@ What started as a "quick weekend look" has turned into a comprehensive moderniza
 - ✅ **11 services** migrated to Java 21/Quarkus (100% complete!)
 - ✅ **Frontend** migrated to Angular 21
 - ✅ **Infrastructure** fully designed with AWS CDK (9 stacks)
-- ✅ **CI/CD** automated with GitHub Actions
+- ✅ **CI/CD** automated with GitHub Actions (postponed until full migration)
 - ✅ **Multi-agent system** - 24 AI agents coordinated the work in parallel
 - ✅ **Autonomous testing** - Self-healing test suite that fixes issues automatically!
 

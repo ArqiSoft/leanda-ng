@@ -4,13 +4,58 @@ This directory contains the agent coordination system for parallel development o
 
 ## Overview
 
-The agent coordination system enables multiple AI agents (via Cursor) to work in parallel on different parts of the project while maintaining coordination and avoiding conflicts.
+The agent coordination system enables multiple AI agents to work in parallel on different parts of the project while maintaining coordination and avoiding conflicts.
+
+**Supported AI Tools**:
+- **Cursor** - IDE-based AI assistant
+- **Claude Code** - Anthropic's CLI for Claude
+
+---
+
+## Quick Start by Tool
+
+### Cursor Quick Start
+
+1. Open project in Cursor
+2. Read `AGENT_PROMPTS.md` and copy your agent prompt
+3. Paste into Cursor chat
+4. Follow agent workflow
+
+### Claude Code Quick Start
+
+1. Navigate to project root: `cd /path/to/mono-repo`
+2. Start Claude Code: `claude`
+3. Claude reads `CLAUDE.md` automatically
+4. Ask Claude to read `docs/agents/CLAUDE_AGENT_PROMPTS.md`
+5. Copy desired agent prompt and paste
+
+```bash
+# Or use helper scripts
+./docs/agents/scripts/claude-agent-init.sh   # Initialize session
+./docs/agents/scripts/claude-status.sh       # Check status
+./docs/agents/scripts/claude-commands.sh     # Common commands
+```
+
+---
 
 ## Key Files
 
+### Shared Files (Both Tools)
 - **`COORDINATION.md`** - Single source of truth for all agent status, dependencies, and project state
-- **`AGENT_PROMPTS.md`** - Ready-to-use prompts for each agent (copy and paste into Cursor)
-- **`scripts/`** - Helper scripts for agent initialization and status checking
+
+### Cursor Files
+- **`AGENT_PROMPTS.md`** - Ready-to-use prompts for Cursor agents
+- **`scripts/agent-init.sh`** - Cursor agent initialization
+- **`scripts/agent-status.sh`** - Cursor agent status check
+- **`scripts/health-check.sh`** - Service health check
+
+### Claude Code Files
+- **`CLAUDE.md`** (repo root) - Main Claude Code configuration
+- **`CLAUDE_COORDINATION.md`** - Claude Code-specific coordination guide
+- **`CLAUDE_AGENT_PROMPTS.md`** - Ready-to-use prompts for Claude Code
+- **`scripts/claude-agent-init.sh`** - Claude Code agent initialization
+- **`scripts/claude-status.sh`** - Claude Code status check
+- **`scripts/claude-commands.sh`** - Common Claude Code commands
 
 ## Quick Start
 
@@ -149,7 +194,7 @@ Checks health of all services in docker-compose.
 - ✅ **Phase 1**: Complete (Core API, Domain Services, Persistence, Testing, Docker)
 - ✅ **Phase 2**: Complete (Parsers, Blob Storage, Office, Metadata, Indexing, Frontend, Integration)
 - ⏳ **Phase 3**: Pending (ML Services - Feature Vectors, Modeler, Predictor)
-- 📋 **Phase 4**: Planned (Production Deployment - AWS CDK, CI/CD, Monitoring)
+- 📋 **Phase 4**: Planned (Production Deployment - AWS CDK, CI/CD postponed until full migration, Monitoring)
 
 See `COORDINATION.md` for detailed status of each agent.
 
@@ -191,5 +236,5 @@ All paths use the consolidated structure. Use:
 
 ---
 
-**Last Updated**: 2025-12-27 - Updated for consolidated project structure
+**Last Updated**: 2025-01-10 - Added Claude Code support (CLAUDE.md, CLAUDE_COORDINATION.md, CLAUDE_AGENT_PROMPTS.md, helper scripts)
 

@@ -36,7 +36,7 @@ As an experienced data and software engineering lead with over 20 years in build
 
 ### Strengths
 
-- **Phased Approach**: The 12-month timeline with five phases (Foundation & Security, Testing & CI/CD, Architecture & Patterns, Performance & Scalability, Developer Experience) prioritizes critical security updates first, aligning with best practices like "secure by design" and incremental delivery.
+- **Phased Approach**: The 12-month timeline with five phases (Foundation & Security, Testing & CI/CD (CI/CD postponed until full migration is complete), Architecture & Patterns, Performance & Scalability, Developer Experience) prioritizes critical security updates first, aligning with best practices like "secure by design" and incremental delivery.
 - **Comprehensive Coverage**: It targets key pain points—outdated stacks (.NET Core 3.1 to .NET 8, Java 8/Spring Boot 2.0.0.RC1 to Java 17/Spring Boot 3.1, Angular 9 to 17, databases to LTS versions), deprecated tools (Protractor to Playwright, Travis CI to GitHub Actions), and enhancements (OpenTelemetry for observability, OpenAPI for APIs).
 - **Risk Mitigation**: Emphasizes backups, rollback plans, staging environments, and success metrics (e.g., zero critical vulnerabilities, 99.9% uptime), which reflect mature engineering practices.
 - **Quick Wins**: Immediate actions like dependency updates and security audits provide early value.
@@ -57,7 +57,7 @@ The ArqiSoft organization (<https://github.com/ArqiSoft>) contains 28 public rep
 
 ### Key Observations
 
-- **Fragmentation**: Each microservice is in a separate repo (e.g., leanda-core in C#, chemical-properties-service in Java, ml-services in Python), leading to duplicated CI/CD setups, inconsistent versioning, and hard-to-manage dependencies. A monorepo or grouped structure (e.g., core, domains, ml) would streamline collaboration.
+- **Fragmentation**: Each microservice is in a separate repo (e.g., leanda-core in C#, chemical-properties-service in Java, ml-services in Python), leading to duplicated CI/CD setups (CI/CD postponed until full migration), inconsistent versioning, and hard-to-manage dependencies. A monorepo or grouped structure (e.g., core, domains, ml) would streamline collaboration.
 - **Outdated Code**: Most repos last updated pre-2021 (e.g., crystal-file-parser-service in 2019, spectra-file-parser-service in 2020), with vulnerabilities from old dependencies. Recent activity is minimal (e.g., leanda-ui updated Dec 23, 2025, possibly a minor fix).
 - **Polyglot Nature**: C# for core/persistence (leanda-core, metadata-processing-service), Java for parsers/processors (chemical-file-parser-service, office-file-processor-service), Python for ML/CLI (ml-text-mining, leanda-cli), TypeScript for UI/testing (leanda-ui, leanda-test). This diversity complicates builds and deployments.
 - **Quality Issues**: Limited READMEs, no ADRs (Architecture Decision Records), sparse tests (leanda-test uses deprecated Protractor), and no modern CI (some .travis.yml files). No issues/PRs indicate stalled community/development.
@@ -67,7 +67,7 @@ This setup risks security holes and hinders scalability. Redesign should consoli
 
 ## Proposed Step-by-Step Modular Redesign Strategy
 
-Drawing from best engineering practices (e.g., DDD for bounded contexts, Twelve-Factor App principles, CI/CD pipelines, TDD/BDD, observability-first), I propose a modular redesign as a greenfield rewrite with parallel migration. This ensures zero-downtime rollout, focusing on core functionality first. Adopt AWS-native for managed services, unifying backend in Java 25 LTS/Quarkus (fast, cloud-native), Python 3.13 for ML, Angular 21 for UI.
+Drawing from best engineering practices (e.g., DDD for bounded contexts, Twelve-Factor App principles, CI/CD pipelines (CI/CD postponed until full migration), TDD/BDD, observability-first), I propose a modular redesign as a greenfield rewrite with parallel migration. This ensures zero-downtime rollout, focusing on core functionality first. Adopt AWS-native for managed services, unifying backend in Java 25 LTS/Quarkus (fast, cloud-native), Python 3.13 for ML, Angular 21 for UI.
 
 ### Guiding Principles
 
@@ -121,7 +121,7 @@ Drawing from best engineering practices (e.g., DDD for bounded contexts, Twelve-
   1. Full test suite: Unit/integration/E2E, security (penetration testing), performance (response times <500ms).
   2. Data migration: Scripts from MongoDB to DocumentDB; validate integrity.
   3. Chaos engineering: AWS Fault Injection for resilience.
-- **Best Practices**: CI/CD with CodePipeline (matrix builds, auto-deploys); blue/green deployments.
+- **Best Practices**: CI/CD with CodePipeline (matrix builds, auto-deploys) — CI/CD postponed until full migration is complete; blue/green deployments.
 - **Testing/Validation**: Coverage >85%; user acceptance testing (UAT) with scientists; metrics validation (uptime, vuln scans).
 - **Deliverables**: Production-ready system; migration guide.
 

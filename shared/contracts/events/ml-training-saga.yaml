@@ -1,0 +1,254 @@
+asyncapi: '2.6.0'
+info:
+  title: ML Training Saga Events
+  version: '1.0.0'
+  description: |
+    AsyncAPI specification for ML training saga orchestration (Training,
+    ModelTraining, PropertiesPrediction). States: Optimization -> Training -> Processed.
+    CorrelationId propagates through all steps.
+
+servers:
+  kafka:
+    url: localhost:9092
+    protocol: kafka
+    description: Kafka broker for saga events
+
+channels:
+  ml-training-started:
+    description: ML training saga started
+    subscribe:
+      message:
+        $ref: '#/components/messages/MlTrainingStarted'
+  ml-training-optimized:
+    description: Optimization phase completed
+    subscribe:
+      message:
+        $ref: '#/components/messages/MlTrainingOptimized'
+  ml-training-optimization-failed:
+    description: Optimization phase failed
+    subscribe:
+      message:
+        $ref: '#/components/messages/MlTrainingOptimizationFailed'
+  ml-model-training-finished:
+    description: Single model training finished
+    subscribe:
+      message:
+        $ref: '#/components/messages/MlModelTrainingFinished'
+  ml-model-training-failed:
+    description: Single model training failed
+    subscribe:
+      message:
+        $ref: '#/components/messages/MlModelTrainingFailed'
+  ml-training-completed:
+    description: Full ML training saga completed
+    subscribe:
+      message:
+        $ref: '#/components/messages/MlTrainingCompleted'
+  ml-training-failed:
+    description: ML training saga failed
+    subscribe:
+      message:
+        $ref: '#/components/messages/MlTrainingFailed'
+
+components:
+  messages:
+    MlTrainingStarted:
+      name: MlTrainingStarted
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MlTrainingStarted'
+    MlTrainingOptimized:
+      name: MlTrainingOptimized
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MlTrainingOptimized'
+    MlTrainingOptimizationFailed:
+      name: MlTrainingOptimizationFailed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MlTrainingOptimizationFailed'
+    MlModelTrainingFinished:
+      name: MlModelTrainingFinished
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MlModelTrainingFinished'
+    MlModelTrainingFailed:
+      name: MlModelTrainingFailed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MlModelTrainingFailed'
+    MlTrainingCompleted:
+      name: MlTrainingCompleted
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MlTrainingCompleted'
+    MlTrainingFailed:
+      name: MlTrainingFailed
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/MlTrainingFailed'
+
+  schemas:
+    MlTrainingStarted:
+      type: object
+      required:
+        - CorrelationId
+        - TrainingId
+        - UserId
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        TrainingId:
+          type: string
+          format: uuid
+        UserId:
+          type: string
+          format: uuid
+        TimeStamp:
+          type: string
+          format: date-time
+
+    MlTrainingOptimized:
+      type: object
+      required:
+        - CorrelationId
+        - TrainingId
+        - UserId
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        TrainingId:
+          type: string
+          format: uuid
+        UserId:
+          type: string
+          format: uuid
+        TimeStamp:
+          type: string
+          format: date-time
+
+    MlTrainingOptimizationFailed:
+      type: object
+      required:
+        - CorrelationId
+        - TrainingId
+        - UserId
+        - Message
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        TrainingId:
+          type: string
+          format: uuid
+        UserId:
+          type: string
+          format: uuid
+        Message:
+          type: string
+        TimeStamp:
+          type: string
+          format: date-time
+
+    MlModelTrainingFinished:
+      type: object
+      required:
+        - CorrelationId
+        - ModelId
+        - TrainingId
+        - UserId
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        ModelId:
+          type: string
+          format: uuid
+        TrainingId:
+          type: string
+          format: uuid
+        UserId:
+          type: string
+          format: uuid
+        TimeStamp:
+          type: string
+          format: date-time
+
+    MlModelTrainingFailed:
+      type: object
+      required:
+        - CorrelationId
+        - ModelId
+        - TrainingId
+        - UserId
+        - Message
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        ModelId:
+          type: string
+          format: uuid
+        TrainingId:
+          type: string
+          format: uuid
+        UserId:
+          type: string
+          format: uuid
+        Message:
+          type: string
+        TimeStamp:
+          type: string
+          format: date-time
+
+    MlTrainingCompleted:
+      type: object
+      required:
+        - CorrelationId
+        - TrainingId
+        - UserId
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        TrainingId:
+          type: string
+          format: uuid
+        UserId:
+          type: string
+          format: uuid
+        TimeStamp:
+          type: string
+          format: date-time
+
+    MlTrainingFailed:
+      type: object
+      required:
+        - CorrelationId
+        - TrainingId
+        - UserId
+        - Message
+        - TimeStamp
+      properties:
+        CorrelationId:
+          type: string
+          format: uuid
+        TrainingId:
+          type: string
+          format: uuid
+        UserId:
+          type: string
+          format: uuid
+        Message:
+          type: string
+        TimeStamp:
+          type: string
+          format: date-time

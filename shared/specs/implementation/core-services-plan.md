@@ -636,6 +636,16 @@ Infrastructure (Docker Compose)
 └─────────┘  └─────────┘  └─────────┘
 ```
 
+## Legacy-only domain events (add when migrating record/Pdf/Reaction backends)
+
+The file `specs/events/domain-events.yaml` currently covers User, Folder, File, Record (RecordCreated, RecordParsed, RecordFieldsUpdated, RecordPersisted), ML, Export, Processing, and Notifications. The following events and commands exist in legacy but are **not** yet in domain-events.yaml. Add them when implementing or migrating the corresponding backends:
+
+- **RecordsFile** (Sds.Osdr.RecordsFile): RecordDeleted, FieldsAdded, TotalRecordsUpdated, AggregatedPropertiesAdded, RecordsFileCreated, FieldsUpdated, IssueAdded, InvalidRecordCreated, PropertyAdded, ImageAdded, PropertiesAdded, IssuesAdded; commands: AddFields, AddProperties, UpdateFields, DeleteRecord, AddImage, AddIssues, AddAggregatedProperties, UpdateTotalRecords, ChangeStatus, CreateInvalidRecord, SetAccessPermissions, CopyRecord.
+- **Pdf** (Sds.Osdr.Pdf): PdfFileCreated.
+- **Reactions** (Sds.Osdr.Reactions): ReactionCreated; command CreateReaction.
+
+Extend `leanda.records.events` / `leanda.records.commands` (and file-type-specific channels if needed) in domain-events.yaml with the above message refs and payload schemas when those workflows are migrated.
+
 ## Migration Risks & Mitigations
 
 | Risk | Impact | Mitigation |

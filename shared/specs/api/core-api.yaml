@@ -4,14 +4,14 @@ info:
   description: |
     Core API for Leanda.io Open Science Platform.
     Extracted from legacy .NET WebApi controllers for Quarkus migration.
-  version: 2.0.0
+  version: 1.0.0
   contact:
     name: Leanda Team
   license:
     name: MIT
 
 servers:
-  - url: /api/v2
+  - url: /api/v1
     description: Leanda NG Core API
 
 security:
@@ -31,6 +31,16 @@ tags:
     description: Machine learning model training and prediction
   - name: Health
     description: Health check endpoints
+  - name: Categories
+    description: Category tree operations
+  - name: Search
+    description: Full-text search (OpenSearch-backed)
+  - name: UserNotifications
+    description: User notification management
+  - name: NodeCollections
+    description: Bulk node move/delete operations
+  - name: CategoryEntities
+    description: Entity-to-category associations
 
 paths:
   # ============== HEALTH ENDPOINTS ==============
@@ -978,6 +988,356 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  # ============== CATEGORIES ENDPOINTS ==============
+  /categories/tree:
+    get:
+      tags: [Categories]
+      summary: Get all category trees
+      operationId: getAllCategoryTrees
+      parameters:
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of category trees (with pagination)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedCategoryTrees'
+    post:
+      tags: [Categories]
+      summary: Create category tree
+      operationId: createCategoryTree
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryTreeNodesRequest'
+      responses:
+        '201':
+          description: Category tree created
+          headers:
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /categories/tree/{id}:
+    get:
+      tags: [Categories]
+      summary: Get category tree by ID
+      operationId: getCategoryTree
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Category tree details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryTree'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [Categories]
+      summary: Update category tree
+      operationId: updateCategoryTree
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryTreeNodesRequest'
+      responses:
+        '200':
+          description: Category tree updated
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Categories]
+      summary: Delete category tree
+      operationId: deleteCategoryTree
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Category tree deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /categories/tree/{id}/{nodeId}:
+    put:
+      tags: [Categories]
+      summary: Update category tree node
+      operationId: updateCategoryTreeNode
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TreeNode'
+      responses:
+        '200':
+          description: Node updated
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Categories]
+      summary: Delete category tree node
+      operationId: deleteCategoryTreeNode
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Node deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============== SEARCH ENDPOINTS ==============
+  /search:
+    get:
+      tags: [Search]
+      summary: Search nodes (OpenSearch-backed)
+      operationId: getSearchResults
+      parameters:
+        - name: query
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query string
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Search results (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedSearchResults'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # ============== USER NOTIFICATIONS ENDPOINTS ==============
+  /notifications:
+    get:
+      tags: [UserNotifications]
+      summary: Get current user notifications
+      operationId: getUserNotifications
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+            default: true
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of notifications (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedUserNotifications'
+    delete:
+      tags: [UserNotifications]
+      summary: Delete all current user notifications
+      operationId: deleteAllUserNotifications
+      responses:
+        '202':
+          description: Delete accepted
+
+  /notifications/{id}:
+    delete:
+      tags: [UserNotifications]
+      summary: Delete notification by ID
+      operationId: deleteUserNotification
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Delete accepted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============== NODE COLLECTIONS ENDPOINTS ==============
+  /nodes/collection:
+    patch:
+      tags: [NodeCollections]
+      summary: Bulk move or delete nodes (JsonPatch)
+      operationId: patchNodeCollection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNodeCollectionRequest'
+      responses:
+        '202':
+          description: Operations accepted
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # ============== CATEGORY ENTITIES ENDPOINTS ==============
+  /entities/{entityId}/categories:
+    get:
+      tags: [CategoryEntities]
+      summary: Get categories for entity
+      operationId: getEntityCategories
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of category IDs for the entity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [CategoryEntities]
+      summary: Add categories to entity
+      operationId: addEntityCategories
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntityCategoriesRequest'
+      responses:
+        '202':
+          description: Add accepted
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [CategoryEntities]
+      summary: Remove all categories from entity
+      operationId: removeAllEntityCategories
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Remove accepted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /entities/{entityId}/categories/{categoryId}:
+    delete:
+      tags: [CategoryEntities]
+      summary: Remove category from entity
+      operationId: removeEntityCategory
+      parameters:
+        - name: entityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Remove accepted
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /categories/{categoryId}/entities:
+    get:
+      tags: [CategoryEntities]
+      summary: Get entities for category
+      operationId: getEntitiesByCategory
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/PageNumber'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: List of entity IDs in category (paginated)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedEntityRefs'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -1498,4 +1858,176 @@ components:
         status:
           type: string
           enum: [CALCULATING, COMPLETED, FAILED]
+
+    # ============== CATEGORIES SCHEMAS ==============
+    CategoryTree:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreeNode'
+        createdBy:
+          type: string
+          format: uuid
+        createdDateTime:
+          type: string
+          format: date-time
+        updatedBy:
+          type: string
+          format: uuid
+        updatedDateTime:
+          type: string
+          format: date-time
+
+    TreeNode:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreeNode'
+        categoryId:
+          type: string
+          format: uuid
+          nullable: true
+
+    CategoryTreeNodesRequest:
+      type: array
+      items:
+        $ref: '#/components/schemas/TreeNode'
+
+    PagedCategoryTrees:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryTree'
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
+
+    # ============== SEARCH SCHEMAS ==============
+    SearchResultItem:
+      type: object
+      additionalProperties: true
+      description: Search hit (node/entity fields as returned by OpenSearch)
+
+    PagedSearchResults:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResultItem'
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
+
+    # ============== USER NOTIFICATIONS SCHEMAS ==============
+    UserNotification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        message:
+          type: string
+        isRead:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+        type:
+          type: string
+
+    PagedUserNotifications:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserNotification'
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
+
+    # ============== NODE COLLECTIONS SCHEMAS ==============
+    UpdateNodeCollectionRequest:
+      type: object
+      properties:
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Target parent for moved nodes
+        deleted:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeCollectionItem'
+          description: Nodes to delete (soft)
+        forceDeleted:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeCollectionItem'
+          description: Nodes to force delete
+        moved:
+          type: array
+          items:
+            $ref: '#/components/schemas/NodeCollectionItem'
+          description: Nodes to move to parentId
+
+    NodeCollectionItem:
+      type: object
+      required: [id, type]
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        type:
+          type: string
+          enum: [File, Folder, Model]
+        correlationId:
+          type: string
+          format: uuid
+          nullable: true
+
+    # ============== CATEGORY ENTITIES SCHEMAS ==============
+    EntityCategoriesRequest:
+      type: object
+      required: [categoriesIds]
+      properties:
+        categoriesIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    PagedEntityRefs:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: string
+            format: uuid
+        pagination:
+          $ref: '#/components/schemas/PaginationMetadata'
 

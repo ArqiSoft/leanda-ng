@@ -7,7 +7,7 @@
 ## High-Level Architecture
 
 ```mermaid
-graph TB
+graph TD
     subgraph "Internet"
         Users[Users & Applications]
     end
@@ -114,7 +114,7 @@ sequenceDiagram
     participant Indexing
     participant OpenSearch
     
-    User->>CoreAPI: Upload File (POST /api/v2/files)
+    User->>CoreAPI: Upload File (POST /api/v1/files)
     CoreAPI->>BlobStorage: Store File
     BlobStorage->>S3: Upload to S3
     BlobStorage->>Kafka: Publish FileCreated Event
@@ -133,7 +133,7 @@ sequenceDiagram
     Indexing->>OpenSearch: Index Document
     Indexing->>Kafka: Publish EntityIndexed Event
     
-    User->>CoreAPI: Search (GET /api/v2/search?q=...)
+    User->>CoreAPI: Search (GET /api/v1/search?q=...)
     CoreAPI->>OpenSearch: Query
     OpenSearch->>CoreAPI: Results
     CoreAPI->>User: 200 OK
@@ -142,7 +142,7 @@ sequenceDiagram
 ## Multi-AZ Deployment Architecture
 
 ```mermaid
-graph TB
+graph TD
     subgraph "AWS Region: us-east-1"
         subgraph "Availability Zone: us-east-1a"
             subgraph "Public Subnet 1a"
@@ -226,7 +226,7 @@ graph LR
 ## Caching Architecture
 
 ```mermaid
-graph TB
+graph TD
     User[User Request]
     
     subgraph "Layer 1: CloudFront CDN"
@@ -270,7 +270,7 @@ graph TB
 ## Disaster Recovery Architecture
 
 ```mermaid
-graph TB
+graph TD
     subgraph "Primary Region: us-east-1"
         subgraph "Production"
             ProdECS[ECS Services]
@@ -301,7 +301,7 @@ graph TB
 ## Security Architecture
 
 ```mermaid
-graph TB
+graph TD
     User[User]
     
     subgraph "Edge Security"
@@ -386,7 +386,7 @@ graph LR
 ## Observability Architecture
 
 ```mermaid
-graph TB
+graph TD
     subgraph "Application Layer"
         Services[Microservices]
     end

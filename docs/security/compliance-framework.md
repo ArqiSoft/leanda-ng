@@ -1,8 +1,8 @@
 # Compliance Framework
 
-**Last Updated**: 2025-12-27  
-**Status**: Complete  
-**Owner**: Agent PROD-4
+**Last Updated**: 2026-01-10  
+**Status**: In Progress (SOC 2 Type II section added)  
+**Owner**: Agent PROD-4 (GDPR), Agent PROD-7 (SOC 2 Type II)
 
 ## Overview
 
@@ -329,10 +329,50 @@ This document describes the compliance framework for Leanda.io platform, coverin
 - Annual refresher training
 - Updates when regulations change
 
+## SOC 2 Type II Compliance
+
+### Overview
+
+SOC 2 Type II is an audit framework that requires evidence of operational effectiveness of controls over a period of time (typically 6-12 months). SOC 2 Type II covers 5 Trust Service Criteria (TSC):
+
+1. **CC6: Security (Common Criteria)** - System is protected against unauthorized access
+2. **CC7: Availability** - System is available for operation and use
+3. **CC8: Processing Integrity** - System processing is complete, valid, accurate, timely, and authorized
+4. **CC6.7: Confidentiality** - Information designated as confidential is protected
+5. **P1-P9: Privacy** - Personal information is collected, used, retained, disclosed, and disposed of in conformity with commitments
+
+### Compliance Status
+
+- **Security (CC6)**: ✅ Complete - All controls implemented by PROD-4
+- **Availability (CC7)**: ⚠️ Partial - Monitoring complete, business continuity in progress
+- **Processing Integrity (CC8)**: ❌ In Progress - Controls being implemented
+- **Confidentiality (CC6.7)**: ⚠️ Partial - Data classification complete, handling procedures in progress
+- **Privacy (P1-P9)**: ✅ Complete - All controls implemented via GDPR compliance
+
+### Implementation
+
+SOC 2 Type II compliance is being implemented by Agent PROD-7 (Compliance & SOC 2 Type II Architect). The implementation includes:
+
+- Control design and documentation
+- Control implementation for missing controls
+- Evidence collection procedures
+- Continuous monitoring
+- Audit preparation
+
+### Related Documentation
+
+- [SOC 2 Type II Compliance Framework](./soc2-type2-compliance.md) - Comprehensive SOC 2 compliance documentation
+- [SOC 2 Control Matrix](./soc2-control-matrix.md) - Control mapping matrix
+- [SOC 2 Evidence Requirements](./soc2-evidence-requirements.md) - Evidence collection requirements
+- [SOC 2 Audit Preparation](./soc2-audit-preparation.md) - Audit preparation guide
+- [ADR 0010: SOC 2 Type II Compliance Strategy](../adr/0010-soc2-type2-compliance-strategy.md) - Architecture decision record
+
 ## References
 
 - [GDPR Official Text](https://gdpr-info.eu/)
 - [GDPR Compliance Guide](https://gdpr.eu/)
 - [AWS GDPR Compliance](https://aws.amazon.com/compliance/gdpr-center/)
 - [Scientific Data Management](https://www.nature.com/articles/sdata201618)
+- [SOC 2 Trust Service Criteria](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/aicpasoc2report.html)
+- [AWS SOC 2 Compliance](https://aws.amazon.com/compliance/soc-faqs/)
 

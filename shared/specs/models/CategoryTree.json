@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://leanda.io/schemas/CategoryTree.json",
+  "title": "CategoryTree",
+  "description": "Category tree entity for organizing entities. Extracted from legacy CategoryTreesController and Leanda.Categories.Domain",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique category tree identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Category tree name"
+    },
+    "nodes": {
+      "type": "array",
+      "description": "Root category nodes (tree structure)",
+      "items": {
+        "$ref": "#/$defs/TreeNode"
+      }
+    },
+    "createdBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who created the tree"
+    },
+    "createdDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updatedBy": {
+      "type": "string",
+      "format": "uuid",
+      "description": "User ID who last updated the tree"
+    },
+    "updatedDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "version": {
+      "type": "integer",
+      "description": "Version for optimistic locking"
+    },
+    "isDeleted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Soft delete marker"
+    }
+  },
+  "$defs": {
+    "TreeNode": {
+      "type": "object",
+      "description": "Category node in the tree",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Node identifier"
+        },
+        "title": {
+          "type": "string",
+          "description": "Display title of the category"
+        },
+        "parentId": {
+          "type": ["string", "null"],
+          "format": "uuid",
+          "description": "Parent node ID (null for root)"
+        },
+        "children": {
+          "type": "array",
+          "description": "Child category nodes",
+          "items": {
+            "$ref": "#/$defs/TreeNode"
+          }
+        },
+        "categoryId": {
+          "type": ["string", "null"],
+          "format": "uuid",
+          "description": "Optional category ID reference"
+        }
+      }
+    }
+  }
+}

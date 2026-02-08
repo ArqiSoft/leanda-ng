@@ -6,7 +6,7 @@
 
 ## Overview
 
-This document describes the comprehensive security architecture for Leanda.io platform, designed to meet enterprise security requirements, compliance standards (GDPR, scientific data regulations), and AWS Well-Architected Framework security pillar best practices.
+This document describes the comprehensive security architecture for Leanda.io platform, designed to meet enterprise security requirements, compliance standards (GDPR, SOC 2 Type II, scientific data regulations), and AWS Well-Architected Framework security pillar best practices.
 
 ## Security Principles
 
@@ -246,6 +246,7 @@ See [Security Runbooks](./security-runbooks.md) for:
 
 See [Compliance Framework](./compliance-framework.md) for:
 - GDPR compliance procedures
+- SOC 2 Type II compliance framework
 - Scientific data regulations
 - Data subject rights
 - Data breach notification procedures
@@ -264,5 +265,7 @@ See [Compliance Framework](./compliance-framework.md) for:
 - [AWS Well-Architected Framework - Security Pillar](https://docs.aws.amazon.com/wellarchitected/latest/security-pillar/welcome.html)
 - [AWS Security Best Practices](https://aws.amazon.com/architecture/security-identity-compliance/)
 - [GDPR Compliance Guide](https://gdpr.eu/)
+- [SOC 2 Type II Compliance](./soc2-type2-compliance.md)
+- [SOC 2 Trust Service Criteria](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/aicpasoc2report.html)
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 

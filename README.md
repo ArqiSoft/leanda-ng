@@ -37,11 +37,33 @@ Infrastructure is designed, documentation is comprehensive, and contracts are de
 
 See [Project Summary Report](./docs/journey/01-journey-week-1-report.md) for detailed progress.
 
+## Repository Structure
+
+### Current (what exists)
+
+```text
+leanda-ng/
+├── LICENSE
+├── infrastructure/       # CDK config (cdk.json, package.json, tsconfig.json), iam/ (IAM policy JSONs)
+├── docs/                 # architecture, adr, deployment, security, monitoring, testing, finops, agents, journey, phases, frontend, infrastructure
+├── shared/               # contracts/ (AsyncAPI events, blob-storage-api), specs/ (OpenAPI core-api, models, events, implementation, tests)
+├── docker/               # docker-compose.yml, Grafana/Prometheus config, test runners (not runnable without services)
+└── scripts/              # agents/ (QA and automation scripts)
+```
+
+### Planned (once implementation starts)
+
+```text
+leanda-ng/
+├── services/             # Java/Quarkus microservices (core-api, parsers, blob-storage, etc.)
+├── frontend/             # Angular 21 app
+├── ml-services/          # Python/FastAPI ML pipelines
+└── tests/                # Integration and E2E
+```
+
 ## Quick Start
 
-**⚠️ NOTHING is runnable yet - this is a planning/design phase.**
-
-This project is currently in the planning and design phase. Infrastructure is designed, documentation is comprehensive, and contracts are defined, but **no code is implemented or runnable yet**. Implementation will begin after the design phase is complete.
+**⚠️ Nothing is runnable yet.** This project is in planning/design phase; implementation will begin after design is complete.
 
 ### Prerequisites (For Future Implementation)
 
@@ -86,6 +108,9 @@ See the [Development Journey](./docs/journey/01-journey-week-1.md) for progress 
 - **[Engineering Strategy](./docs/04-modernization-engineering-strategy.md)** - Lakehouse approach
 - **[Development Journey](./docs/journey/01-journey-week-1.md)** - Progress logs
 - **[Phase Documentation](./docs/phases/)** - Migration phase details
+- **[Infrastructure (CDK)](./infrastructure/README.md)** - Stacks and deployment
+
+**More:** [Cloud architecture](./docs/cloud-architecture.md) · [ADRs](./docs/adr/) · [Deployment](./docs/deployment/) · [Security](./docs/security/) · [Monitoring](./docs/monitoring/) · [FinOps](./docs/finops/) · [Testing](./docs/testing/) · [Agents / coordination](./docs/agents/) · [Journey](./docs/journey/)
 
 ## Planned Services Overview
 
@@ -109,10 +134,10 @@ See the [Development Journey](./docs/journey/01-journey-week-1.md) for progress 
 
 ### Phase 0: Foundation & Design (Current)
 
-- ✅ **Infrastructure Design**: AWS CDK stacks designed (9 stacks)
+- ✅ **Infrastructure Design**: [AWS CDK stacks designed](./infrastructure/README.md) (9 stacks)
 - ✅ **Documentation**: Comprehensive architecture, ADRs, security, deployment guides
 - ✅ **API Contracts**: OpenAPI/AsyncAPI specifications defined
-- ✅ **Architecture Decisions**: 7 ADRs documented
+- ✅ **Architecture Decisions**: [12 ADRs](./docs/adr/) documented
 - ✅ **Planning**: Multi-agent coordination framework designed
 
 ### Implementation Phase (Next)
@@ -123,7 +148,7 @@ See the [Development Journey](./docs/journey/01-journey-week-1.md) for progress 
 - ⏳ **Phase 4**: Frontend implementation (not started)
 - ⏳ **Phase 5**: Infrastructure deployment and testing (not started)
 
-**Note**: The project is currently in planning/design phase. The ~92% completion refers to design/planning work, not code implementation. See [Development Journey](./docs/journey/01-journey-week-1-report.md) for details.
+**Note**: ~92% refers to design/planning work, not implementation. See [Project Summary Report](./docs/journey/01-journey-week-1-report.md) for details.
 
 ## License
 
