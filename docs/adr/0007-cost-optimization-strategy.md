@@ -173,5 +173,5 @@ Implement a comprehensive FinOps strategy with the following components:
 - [AWS Cost Management Best Practices](https://docs.aws.amazon.com/cost-management/latest/userguide/best-practices.html)
 - [S3 Intelligent-Tiering](https://docs.aws.amazon.com/AmazonS3/latest/userguide/intelligent-tiering.html)
 - [AWS Budgets Documentation](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-managing-costs.html)
-- [FinOps Workspace Rules](../../.cursor/rules/13-aws-finops-cost.mdc)
+- [FinOps Workspace Rules](../.cursor/rules/13-aws-finops-cost.mdc)
 

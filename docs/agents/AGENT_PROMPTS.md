@@ -713,11 +713,11 @@ Testing Tier Alignment (2026-01):
 
 Testing Restructure Next Steps (see docs/agents/COORDINATION.md § Testing Strategy Alignment):
 - **START WITH THIS AGENT** for the testing restructure. Complete these first so other agents have a single source of truth.
-- **Step 1 (Owner)**: Create `docs/testing/TESTING_STRATEGY.md`, `docs/testing/TEST_TIERS.md`, `docs/testing/RUNNING_TESTS.md`. Document 8 tiers, run commands, CI gates.
+- **Step 1 (Owner)**: Maintain `docs/testing/TESTING.md` (strategy, 8 tiers, run commands, CI gates).
 - **Step 4 (Co-owner)**: Add `tests/specs/` layout; define BDD feature ownership; reference feature files from COORDINATION.
 - **Step 5 (Owner)**: Map CI jobs to tiers; add gates (PR: Tier 1+2+3+mocked UI; nightly: Tier 4/5; schedule: Tier 6/7); ensure `.reports/` artifact paths.
 - **Step 6**: Refine "Review Current Testing State" to be tier-aware.
-- **Step 7 (Co-owner)**: Fold/link `docs/testing/E2E_TESTS_REFERENCE.md` into strategy/tiers docs.
+- **Step 7 (Co-owner)**: See `docs/testing/E2E.md` for E2E reference.
 
 Before starting:
 1. Read docs/agents/COORDINATION.md to understand current project status
@@ -730,10 +730,10 @@ Before starting:
 Continuous Workflow:
 
 1. **Review Current Testing State** (Weekly, tier-aware):
-   Use `docs/testing/TEST_TIERS.md` and `docs/testing/RUNNING_TESTS.md` as the single source of truth for tier definitions and run commands.
+   Use `docs/testing/TESTING.md` as the single source of truth for tier definitions and run commands.
    a. **Per-tier coverage**: For each tier (0–7), assess what exists: Tier 0 (specs/contracts), Tier 1 (unit: Java + frontend), Tier 2 (mocked integration), Tier 3 (contract tests), Tier 4/5 (integration/workflows), Tier 6 (E2E), Tier 7 (EC2/staging). Report coverage per tier and per service where relevant.
    b. **Integration test coverage**: Review Tier 2 (mocked), Tier 3 (contract), Tier 4 (real infra, single service), Tier 5 (cross-service). Classify tests using `docs/testing/SERVICE_ISOLATION_PATTERN.md`. Track coverage in `docs/testing/integration-test-inventory.md` and `docs/testing/integration-coverage/`.
-   c. **E2E test coverage**: Review Tier 6 (canonical `tests/e2e/`, mocked `frontend/e2e/integration-mocked/`) and Tier 7 (EC2/staging). Use `docs/testing/E2E_TESTS_REFERENCE.md` and `docs/testing/E2E_CONSOLIDATION.md`. Report coverage for user journeys and full-stack flows.
+   c. **E2E test coverage**: Review Tier 6 (canonical `tests/e2e/`, mocked `frontend/e2e/integration-mocked/`) and Tier 7 (EC2/staging). Use `docs/testing/E2E.md`. Report coverage for user journeys and full-stack flows.
    d. **Gaps per tier**: Identify missing tests or tiers (e.g. no Tier 2 tests, Tier 7 not runnable). Prioritize gaps by criticality and document in testing docs or COORDINATION.
    e. **Execution times and performance**: Review test duration by tier (Tier 1 fast, Tier 4/5 slower, Tier 6/7 slowest). Flag tiers that exceed expected limits; suggest splitting or moving to nightly/scheduled.
    f. **Reliability (flaky tests)**: Track flaky tests by tier and by suite (unit, contract, integration, E2E). Document in `docs/testing/` or COORDINATION; do not only increase timeouts—investigate root cause per project rules.
@@ -990,8 +990,8 @@ Continuous Workflow:
 
 Key Files:
 - Coordination: docs/agents/COORDINATION.md
-- Testing strategy (tier-aware): docs/testing/TESTING_STRATEGY.md, docs/testing/TEST_TIERS.md, docs/testing/RUNNING_TESTS.md
-- E2E consolidation: docs/testing/E2E_CONSOLIDATION.md, docs/testing/E2E_TESTS_REFERENCE.md
+- Testing strategy (tier-aware): docs/testing/TESTING.md
+- E2E: docs/testing/E2E.md
 - Service isolation: docs/testing/SERVICE_ISOLATION_PATTERN.md
 - Test Infrastructure: tests/integration/, tests/e2e/
 - Service Tests: services/*/src/test/
@@ -1067,7 +1067,7 @@ Testing Tier Alignment (2026-01):
 Testing Restructure Next Steps (see docs/agents/COORDINATION.md § Testing Strategy Alignment):
 - **Step 3 (Owner)**: Audit `tests/integration/` and services; classify Tier 2 vs 4 vs 5. Migrate single-service tests to Tier 2 (MockedIntegrationTestBase). Create `docs/testing/SERVICE_ISOLATION_PATTERN.md`.
 - **Step 4 (Co-owner)**: Implement BDD step defs for backend/system; wire to feature files in `tests/specs/`.
-- **Step 7 (Owner)**: Ensure OpenAPI/AsyncAPI contract tests run in CI (Tier 3); reference in TEST_TIERS once QA-Cloud creates it.
+- **Step 7 (Owner)**: Ensure OpenAPI/AsyncAPI contract tests run in CI (Tier 3); reference in TESTING.md.
 - Wait for QA-Cloud to complete Step 1 (strategy docs) before large tier migrations.
 
 Before starting:
@@ -1968,10 +1968,7 @@ Follow the phased plan in docs/testing/LEGACY_UI_TEST_GAPS_AND_PLAN.md:
 - ✅ Update Playwright configuration for UI tests
 - 📄 **Status**: Complete - See `docs/testing/PHASE_0_COMPLETE.md` for details
 - 📄 **Documentation**: 
-  - `docs/testing/E2E_TEST_SELECTORS.md` - Selector reference
-  - `docs/testing/E2E_PAGE_OBJECTS.md` - Page Object Model guide
-  - `docs/testing/E2E_TEST_FIXTURES.md` - Test fixtures reference
-  - `docs/testing/E2E_PLAYWRIGHT_CONFIG.md` - Configuration guide
+  - `docs/testing/E2E.md` - E2E guide; detailed selectors/POM/fixtures in `frontend/e2e/` and `.archive/2025-02-15/testing-reference/`
 
 **Phase 1: Core Smoke Workflows (3-5 days) - NEXT**
 - **Core scope**: core-api + blob-storage + office-processor + indexing + imaging (minimal distro). Indexing is essential to find files; imaging generates thumbnails for uploads in the browser. Chemical-parser is NOT core.
@@ -1982,7 +1979,7 @@ Follow the phased plan in docs/testing/LEGACY_UI_TEST_GAPS_AND_PLAN.md:
 - Notifications: upload triggers toast; open panel; close single/close all
 - Search: upload file, wait for indexing, search by name, validate results (requires indexing service)
 
-**Note**: Phase 0 foundations are ready. Use page objects from `frontend/e2e/pages/`, test fixtures from `frontend/e2e/fixtures/test-helpers.ts`, and selectors from `docs/testing/E2E_TEST_SELECTORS.md`.
+**Note**: Phase 0 foundations are ready. Use page objects from `frontend/e2e/pages/`, test fixtures from `frontend/e2e/fixtures/test-helpers.ts`, and selectors from `frontend/e2e/` and docs/testing/E2E.md.
 
 **Phase 2: File/Folder Interaction Parity (4-6 days) ✅ COMPLETE**
 - ✅ View toggle: tile <-> table
@@ -2117,7 +2114,7 @@ How to Use This Agent:
 - Follow phased implementation plan (Phase 1 → Phase 3 → Phase 4)
 - Use existing page objects from `frontend/e2e/pages/` (FileBrowserPage, ContextMenuPage, etc.)
 - Use test fixtures from `frontend/e2e/fixtures/test-helpers.ts` (createTestFolder, uploadTestFileByType, etc.)
-- Reference selector guide: `docs/testing/E2E_TEST_SELECTORS.md`
+- Reference selector guide: `docs/testing/E2E.md` and `frontend/e2e/`
 - Write tests for one workflow at a time
 - Test in real browser environment
 - Update COORDINATION.md with progress regularly

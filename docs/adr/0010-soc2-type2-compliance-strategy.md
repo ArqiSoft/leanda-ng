@@ -236,7 +236,10 @@ We will implement a comprehensive SOC 2 Type II compliance framework that:
 - [SOC 2 Trust Service Criteria](https://www.aicpa.org/interestareas/frc/assuranceadvisoryservices/aicpasoc2report.html)
 - [AWS SOC 2 Compliance](https://aws.amazon.com/compliance/soc-faqs/)
 - [SOC 2 Type II Requirements](https://www.aicpa.org/content/dam/aicpa/interestareas/frc/assuranceadvisoryservices/downloadabledocuments/trust-services-criteria.pdf)
-- SOC 2 compliance documentation, control matrix, evidence requirements, and audit preparation (to be created under `docs/security/`)
+- [SOC 2 Type II Compliance Documentation](../security/soc2-type2-compliance.md)
+- [SOC 2 Control Matrix](../security/soc2-control-matrix.md)
+- [SOC 2 Evidence Requirements](../security/soc2-evidence-requirements.md)
+- [SOC 2 Audit Preparation](../security/soc2-audit-preparation.md)
 
 ## Related ADRs
 

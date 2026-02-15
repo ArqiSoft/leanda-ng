@@ -6,11 +6,11 @@
 
 Our old home page:
 
-![Home Page (Old)](07-jorney-week-3-home-page-old.png)
+<img src="home-page-old.png" alt="Home Page (Old)" width="600" style="height: auto;" />
 
 And our new modernized home page:
 
-![Home Page (new)](08-jorney-week-3-home-page-new.png)
+<img src="home-page-new.png" alt="Home Page (new)" width="600" style="height: auto;" />
 
 Very interesting.
 

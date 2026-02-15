@@ -160,7 +160,7 @@ The following .NET services need spec extraction:
 
 See:
 - [Agent 0 Work Package](./01-migration-phase-1-agent-work-packages.md#agent-0-legacy-spec-extraction-runs-first)
-- [Agent 0 Prompt](../agents/AGENT_PROMPTS.md)
+- [Agent 0 Prompt](../../leanda-ng-phase2/AGENT_PROMPTS.md#agent-0-legacy-spec-extractor)
 
 ## Timeline
 

@@ -818,7 +818,7 @@ graph TD
 1. **Tier 0: Spec & Contracts** - OpenAPI/AsyncAPI + Gherkin features as the source of truth.
 2. **Tier 1: Unit** - Pure isolation, no I/O (service logic, frontend components/services).
 3. **Tier 2: Service-Integrated (Isolated)** - Single service with mocked dependencies (no Docker).
-4. **Tier 3: Contract** - Automated contract compliance tests. Contract tests live in `tests/integration/contracts/`; CI runs them via the `contract-tests` job (`mvn test -Dtest=*Contract*` in tests/integration). **Consumer-driven contract testing (Pact)** is **not in use** today and is **deferred**; the current approach is spec-based validation plus system-level contract tests (OpenAPI/AsyncAPI). See docs/testing/TESTING_STRATEGY.md and tests/integration/contracts/README.md.
+4. **Tier 3: Contract** - Automated contract compliance tests. Contract tests live in `tests/integration/contracts/`; CI runs them via the `contract-tests` job (`mvn test -Dtest=*Contract*` in tests/integration). **Consumer-driven contract testing (Pact)** is **not in use** today and is **deferred**; the current approach is spec-based validation plus system-level contract tests (OpenAPI/AsyncAPI). See docs/testing/TESTING.md and tests/integration/contracts/README.md.
 5. **Tier 4: Service-Integrated (Real Infra)** - Single service with Testcontainers/docker.
 6. **Tier 5: System Integration** - Cross-service workflows.
 7. **Tier 6: UI E2E** - Critical user journeys via Playwright.
@@ -834,7 +834,7 @@ graph TD
 ### Which Agent to Start With
 
 **Start with Agent QA-Cloud.**  
-QA-Cloud owns the testing strategy documentation and tier definitions. Until `docs/testing/TESTING_STRATEGY.md`, `TEST_TIERS.md`, and `RUNNING_TESTS.md` exist and CI is mapped to tiers, other agents lack a single source of truth. QA-Cloud should complete **Step 1** and **Step 5** (docs + CI mapping) first; then QA-Test-Impl and Frontend-Test-E2E can execute their steps in parallel.
+QA-Cloud owns the testing strategy documentation and tier definitions. Until `docs/testing/TESTING.md` exists and CI is mapped to tiers, other agents lack a single source of truth. QA-Cloud should complete **Step 1** and **Step 5** (docs + CI mapping) first; then QA-Test-Impl and Frontend-Test-E2E can execute their steps in parallel.
 
 ---
 
@@ -842,18 +842,18 @@ QA-Cloud owns the testing strategy documentation and tier definitions. Until `do
 
 | Step | Description | Owner | Status |
 |------|-------------|--------|--------|
-| **1. Document the strategy** | Create `docs/testing/TESTING_STRATEGY.md` (overall strategy, 8 tiers). Create `docs/testing/TEST_TIERS.md` (per-tier scope, location, run command, CI gate). Create/update `docs/testing/RUNNING_TESTS.md` (how to run each tier locally and in CI, including EC2/staging). | **QA-Cloud** | ✅ Complete |
+| **1. Document the strategy** | Create `docs/testing/TESTING.md` (strategy, 8 tiers, run commands, CI, EC2/staging). | **QA-Cloud** | ✅ Complete |
 | **2. Consolidate E2E** | Decide canonical specs in `tests/e2e/` vs mocked-only in `frontend/e2e/`. Merge or remove duplicate user journeys (e.g. core-smoke in both places). Keep `frontend/e2e/integration-mocked/` and `minimal-distribution/`; document as mocked UI / minimal backend. Add Playwright tags/projects for tiers (e.g. `@tier6-e2e`, `@mocked-ui`). | **Frontend-Test-E2E** | ✅ Complete (duplicates removed from frontend/e2e/user-journeys/; canonical = tests/e2e/user-journeys/; tags @tier6-smoke/@tier6-e2e added; E2E_CONSOLIDATION checklist done) |
 | **3. Tighten service-level boundaries** | Audit `tests/integration/` and each service: classify tests as Tier 2 (mocked) vs Tier 4 (real infra) vs Tier 5 (cross-service). Migrate single-service tests to Tier 2 using `MockedIntegrationTestBase` where applicable. Document pattern in `docs/testing/SERVICE_ISOLATION_PATTERN.md`. | **QA-Test-Impl** | ✅ Complete (INTEGRATION_TEST_TIER_AUDIT.md created; all tests classified; @RequiresServices added to API/workflow tests that call core-api; SERVICE_ISOLATION_PATTERN + audit linked) |
 | **4. Introduce BDD/spec-driven flow** | Add `tests/specs/` layout (e.g. `backend/`, `frontend/`, `system/`). Pick 2–3 critical flows; write Gherkin feature files first; wire to existing step defs or add Cucumber/Playwright BDD. Reference feature files from COORDINATION and agent prompts. | **QA-Cloud** (specs + ownership), **QA-Test-Impl** (step defs), **Frontend-Test-E2E** (frontend features) | ✅ Complete (tests/specs/ with backend/, frontend/, system/; health.feature, file-upload-workflow.feature, search-workflow.feature; Cucumber step defs in tests/integration/bdd/; RunCucumberBddTest; README in tests/specs/) |
-| **5. Wire CI to tiers** | Map current jobs to tiers. Add gates: e.g. Tier 1 + 2 + 3 + mocked UI on PR; Tier 4/5 nightly; Tier 6/7 on schedule. Ensure artifact paths match project rules (e.g. `.reports/`). | **QA-Cloud** | 🟢 In progress (mapping documented in RUNNING_TESTS.md; workflow changes pending) |
+| **5. Wire CI to tiers** | Map current jobs to tiers. Add gates: e.g. Tier 1 + 2 + 3 + mocked UI on PR; Tier 4/5 nightly; Tier 6/7 on schedule. Ensure artifact paths match project rules (e.g. `.reports/`). | **QA-Cloud** | 🟢 In progress (mapping documented in TESTING.md; workflow changes pending) |
 | **6. Agent coordination** | QA-Cloud: refine "Review Current Testing State" to be tier-aware. QA-Test-Impl: prioritize Tier 3 contract tests and tier migration. Frontend-Test-E2E: stabilize Phase 1 in `tests/e2e/`, then Phase 4; avoid new E2E in `frontend/e2e/user-journeys/` that duplicate `tests/e2e/`. Frontend-Test-Unit: maintain Tier 1; align with BDD specs when they exist. | **All testing agents** | 🟢 Ongoing (QA-Cloud "Review Current Testing State" made tier-aware in AGENT_PROMPTS) |
-| **7. Short-term wins** | **Phase 1 E2E unblock**: Resolve EC2/tunnel and port conflicts so `scripts/run-phase1-tests-ec2.sh` runs green; document in COORDINATION. **Single E2E reference**: Fold/link `docs/testing/E2E_TESTS_REFERENCE.md` into strategy/tiers docs. **Contract tests in CI**: Ensure OpenAPI/AsyncAPI contract tests run in CI (Tier 3) and are referenced in TEST_TIERS. | **Frontend-Test-E2E** (Phase 1), **QA-Cloud** (E2E reference), **QA-Test-Impl** (contract CI) | 🟢 In progress (E2E reference linked; contract-tests job in test.yml runs Tier 3; TEST_TIERS.md references ContractSpecValidationTest; Phase 1 script fixes applied 2026-01-30) |
+| **7. Short-term wins** | **Phase 1 E2E unblock**: Resolve EC2/tunnel and port conflicts so `scripts/run-phase1-tests-ec2.sh` runs green; document in COORDINATION. **Single E2E reference**: See `docs/testing/E2E.md`. **Contract tests in CI**: Ensure OpenAPI/AsyncAPI contract tests run in CI (Tier 3) and are referenced in TESTING.md. | **Frontend-Test-E2E** (Phase 1), **QA-Cloud** (E2E reference), **QA-Test-Impl** (contract CI) | 🟢 In progress (E2E reference linked; contract-tests job in test.yml runs Tier 3; TESTING.md references ContractSpecValidationTest; Phase 1 script fixes applied 2026-01-30) |
 
 **Suggested order**: QA-Cloud completes Step 1 and Step 5 first → then QA-Test-Impl (Steps 3, 7 contract CI), Frontend-Test-E2E (Steps 2, 7 Phase 1) in parallel → then Step 4 (BDD) with shared ownership.
 
 **Agent alignment (ownership)**:
-- **QA-Cloud**: Tier definitions, spec-first adoption, strategy docs (TESTING_STRATEGY.md, TEST_TIERS.md, RUNNING_TESTS.md), CI-to-tier mapping, BDD feature ownership, single E2E reference.
+- **QA-Cloud**: Tier definitions, spec-first adoption, strategy docs (TESTING.md), CI-to-tier mapping, BDD feature ownership, single E2E reference.
 - **QA-Test-Impl**: Tier migration (service isolation), contract tests in CI, BDD step defs for backend/system.
 - **Frontend-Test-E2E**: E2E consolidation, canonical suite in `tests/e2e/`, Phase 1 stabilization, frontend BDD features.
 - **Frontend-Test-Unit**: Tier 1 alignment, BDD alignment when specs exist.
@@ -1185,7 +1185,7 @@ QA-Cloud owns the testing strategy documentation and tier definitions. Until `do
 
 **Coordination with QA-Cloud (Step 5) and Frontend-Test-E2E (Step 7)**:
 - **Step 5 — CI-to-tier gates**: QA-Test-Impl is ready to align. Current state: `contract-tests` job runs Tier 3 on PR (`mvn test -Dtest=*Contract*`); `integration-tests` job runs Tier 4/5 (needs services). When QA-Cloud defines final gates (e.g. Tier 1+2+3+mocked UI on PR; Tier 4/5 nightly), QA-Test-Impl will adjust test selection or job names if needed. No change required from QA-Test-Impl until QA-Cloud proposes workflow edits.
-- **Step 7 — Phase 1 E2E**: QA-Test-Impl uses **essential services** (core-api, blob-storage, office-processor, indexing, imaging) and BDD features in `tests/specs/` (health, file-upload-workflow, search-workflow). Frontend-Test-E2E can use the same essential set for Phase 1 E2E and `scripts/run-phase1-tests-ec2.sh`. Contract tests in CI (Tier 3) are done. If Phase 1 E2E or minimal-distro scripts need a shared service list or env, reference COORDINATION “Essential services” and `docs/testing/TESTING_STRATEGY.md` §2.
+- **Step 7 — Phase 1 E2E**: QA-Test-Impl uses **essential services** (core-api, blob-storage, office-processor, indexing, imaging) and BDD features in `tests/specs/` (health, file-upload-workflow, search-workflow). Frontend-Test-E2E can use the same essential set for Phase 1 E2E and `scripts/run-phase1-tests-ec2.sh`. Contract tests in CI (Tier 3) are done. If Phase 1 E2E or minimal-distro scripts need a shared service list or env, reference COORDINATION “Essential services” and `docs/testing/TESTING.md` §2.
 
 **Results**:
 - ✅ Gap analysis documents reviewed and prioritized

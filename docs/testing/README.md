@@ -4,9 +4,9 @@ This directory contains documentation for the Leanda integration testing infrast
 
 ## Status
 
-- **Test Infrastructure**: ✅ Fully functional
-- **Minimal Distribution Tests**: ⚠️ Partially passing (2/5) due to known limitation
-- **Docker Infrastructure**: ✅ All services operational
+- **Test Infrastructure**: Fully functional
+- **Minimal Distribution Tests**: Partially passing (2/5) due to known limitation
+- **Docker Infrastructure**: All services operational
 
 ## Which script?
 
@@ -17,115 +17,31 @@ This directory contains documentation for the Leanda integration testing infrast
 | Backend integration, all on EC2 (build + run on EC2) | `./scripts/run-system-integration-tests-ec2-tunnel.sh --minimal` |
 | Local-only (Docker infra + local JVM, frontend E2E) | `./scripts/start-minimal-distro-local.sh` then `./scripts/run-frontend-e2e-minimal-local.sh` |
 
-## Key topics
+## Key Documents
 
-### E2E locally against EC2 APIs and infra
-- Run E2E tests locally connecting to EC2 backend and infra:
-  - **One command**: `./scripts/run-e2e-local-ec2.sh` (resolves EC2 IP, tunnel + local frontend + Phase 1 tests)
-  - With deploy first: `./scripts/run-e2e-local-ec2.sh --deploy`
-  - Or: `./scripts/run-phase1-tests-ec2.sh --skip-infra` after setting `EC2_PUBLIC_IP`
+- **[TESTING.md](TESTING.md)** — Strategy, eight test tiers, run commands per tier, CI mapping, artifact paths, unit vs integration (Java).
+- **[E2E.md](E2E.md)** — Canonical vs mocked E2E, how to run E2E (local JVM, EC2, Docker), Playwright projects/tags, test catalog, selectors/fixtures reference.
+- **[EC2-TESTING.md](EC2-TESTING.md)** — Test-runner EC2 instance, get IP, run integration and Phase 1 E2E on EC2, troubleshooting (root causes archived).
+- **[AUTHENTICATION.md](AUTHENTICATION.md)** — Auth status (frontend/backend), config for tests (OIDC disabled), where auth tests live and how to run them.
+- **[SERVICE_ISOLATION_PATTERN.md](SERVICE_ISOLATION_PATTERN.md)** — Tier 2/4/5 classification and service isolation pattern.
 
-### Rapid E2E testing (local JVM)
-- Infrastructure in Docker, application services in local JVM; faster iteration, hot reload.
-- Scripts: `start-minimal-distro-local.sh`, `run-integration-tests-minimal-local.sh`, `run-frontend-e2e-minimal-local.sh`
+### Archived
 
-### Test runner EC2
-- Cost-optimized EC2 instance for integration/E2E testing; auto-stops after 30 min inactivity; Docker, Java 21, Maven; ~$8/month when stopped.
+- Troubleshooting, root-cause, phase-completion, and audit docs: **`.archive/2025-02-15/`** (e.g. EC2_MINIMAL_ROOT_CAUSES.md, PHASE_*_COMPLETE.md, INTEGRATION_TEST_TIER_AUDIT.md).
+- Detailed E2E reference (selectors, page objects, fixtures, Playwright config): **`.archive/2025-02-15/testing-reference/`**.
 
-### Authentication testing
-- Frontend: OIDC implemented. Backend: authentication not yet implemented. Tests created (handle both states).
-- Integration tests: `tests/integration/src/test/java/io/leanda/tests/integration/auth/`; E2E: `frontend/e2e/integration/auth.spec.ts`, `login-flow.spec.ts`.
+## Quick reference
 
-### Test status
-- Minimal distribution: 2/5 passing (blob-storage, OpenSearch); 3/5 failing (imaging, office-processor, indexing) due to Jandex limitation.
+- **Rapid E2E** (infra in Docker, apps in JVM): `./scripts/start-minimal-distro-local.sh` then `./scripts/run-frontend-e2e-minimal-local.sh` or `./scripts/run-integration-tests-minimal-local.sh`. See [E2E.md](E2E.md).
+- **All tiers and commands**: See [TESTING.md](TESTING.md).
 
-### Jandex REST client limitation
-- REST client interfaces in external JARs cannot be used in local JAR mode. Use Docker for service deployment (works correctly).
+## Known limitations
 
-## Quick Reference
+1. **Jandex REST client**: Services using `BlobStorageApi` from `shared-models.jar` fail in local JAR mode (imaging, office-processor, indexing). Use Docker for full functionality.
+2. **Local JVM**: REST clients from external JARs not supported; use Docker or `./mvnw quarkus:dev`.
 
-### Rapid E2E Testing (Recommended for Development)
-
-```bash
-# Start minimal distribution (infra in Docker, apps in JVM)
-./scripts/start-minimal-distro-local.sh
-
-# Run backend integration tests
-./scripts/run-integration-tests-minimal-local.sh
-
-# Run frontend E2E tests
-./scripts/run-frontend-e2e-minimal-local.sh
-
-# Run all E2E tests
-./scripts/run-all-e2e-minimal-local.sh
-
-# Stop services
-./scripts/stop-minimal-distro-local.sh
-```
-
-See **Rapid E2E testing** above for scripts.
-
-### Running Tests (Traditional Docker Mode)
-
-```bash
-# Run minimal distribution tests
-cd tests/integration
-mvn test -Dtest=MinimalDistributionServiceTest -Ddistribution.mode=minimal
-
-# Expected: 2/5 passing (known limitation with remaining 3)
-```
-
-### Docker Infrastructure
-
-```bash
-# Start integration infrastructure
-docker-compose -f docker/docker-compose.yml up -d
-
-# Services:
-# - MongoDB: localhost:27019
-# - Kafka: localhost:19093
-# - OpenSearch: localhost:9202
-# - MinIO: localhost:9001
-# - Redis: localhost:6380
-```
-
-### Test Services
-
-When tests run, these services start:
-- core-api (8080)
-- blob-storage (8084)
-- imaging (8090)
-- office-processor (8091)
-- indexing (8099)
-
-## Known Limitations
-
-1. **Jandex REST Client Issue**: Services using `BlobStorageApi` from `shared-models.jar` fail in local JAR mode
-   - Affects: imaging, office-processor, indexing
-   - Workaround: Deploy services to Docker (full functionality)
-   - Details: See **Jandex REST client limitation** above.
-
-2. **Local JVM Limitations**: Running services as `java -jar` has constraints
-   - REST clients from external JARs not supported
-   - Use Docker or `./mvnw quarkus:dev` instead
-
-## Production Deployment
-
-✅ **Services work correctly in production deployment modes:**
-- Docker Compose
-- Kubernetes
-- Native image (GraalVM)
-
-The Jandex limitation **only affects local JAR testing**, not production.
+Production deployments (Docker Compose, Kubernetes, native image) are not affected.
 
 ## Contributing
 
-When adding new tests:
-1. Document any external dependencies
-2. Update test status documents
-3. Note any known limitations
-4. Verify tests pass in Docker mode
-
----
-
-**Last Updated**: 2026-01-18
+When adding new tests: document dependencies, update test status, note limitations, verify in Docker mode.
